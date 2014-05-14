@@ -12,6 +12,7 @@ return array(
     'Zend\\ServiceManager\\' => array($vendorDir . '/zendframework/zend-servicemanager'),
     'Zend\\Loader\\' => array($vendorDir . '/zendframework/zend-loader'),
     'Zend\\Http\\' => array($vendorDir . '/zendframework/zend-http'),
+    'Zend\\Filter\\' => array($vendorDir . '/zendframework/zend-filter'),
     'Zend\\Feed\\' => array($vendorDir . '/zendframework/zend-feed'),
     'Zend\\Escaper\\' => array($vendorDir . '/zendframework/zend-escaper'),
     'Zend\\Config\\' => array($vendorDir . '/zendframework/zend-config'),
