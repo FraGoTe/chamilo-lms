@@ -498,6 +498,14 @@ $app->register(new PagerfantaServiceProvider());
 // Custom route params see https://github.com/franmomu/silex-pagerfanta-provider/pull/2
 //$app['pagerfanta.view.router.name']
 //$app['pagerfanta.view.router.params']
+$app['pagerfanta.view_factory'] = $app->share($app->extend('pagerfanta.view_factory', function($viewFactory, $app) {
+    $customView = new \Pagerfanta\View\TwitterBootstrap3View();
+    $viewFactory->add(array(
+        'twitter_bootstrap3' => $customView
+    ));
+
+    return $viewFactory;
+}));
 
 $app['pagerfanta.view.options'] = array(
     'routeName'     => null,
@@ -506,7 +514,7 @@ $app['pagerfanta.view.options'] = array(
     'proximity'     => 3,
     'next_message'  => '&raquo;',
     'prev_message'  => '&laquo;',
-    'default_view'  => 'twitter_bootstrap' // the pagination style
+    'default_view'  => 'twitter_bootstrap3' // the pagination style
 );
 
 // Registering Menu service provider (too gently creating menus with the URLgenerator provider)

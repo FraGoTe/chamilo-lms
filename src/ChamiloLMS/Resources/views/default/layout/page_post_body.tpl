@@ -1,3 +1,3 @@
 {% if pagination != '' %}
-    {{ pagerfanta(pagination, 'twitter_bootstrap', { 'proximity': 3 } ) }}
+    {{ pagerfanta(pagination, 'twitter_bootstrap3', { 'proximity': 3 } ) }}
 {% endif %}
