@@ -803,10 +803,13 @@ class Exercise
                 $end_time = '0000-00-00 00:00:00';
             }
 
-            $sql = "INSERT INTO $TBL_EXERCICES (c_id, start_time, end_time, title, description, sound, type, random, random_answers, active,
+            $id = $this->getMaxIdByCourse($this->course_id);
+            $this->id = $id;
+            $sql = "INSERT INTO $TBL_EXERCICES (id, c_id, start_time, end_time, title, description, sound, type, random, random_answers, active,
                                                 results_disabled, max_attempt, feedback_type, expired_time, session_id, review_answers, random_by_category,
                                                 text_when_finished, display_category_name, pass_percentage)
 					VALUES(
+					    $id,
 						".$this->course_id.",
 						'$start_time','$end_time',
 						'".Database::escape_string($exercise)."',
@@ -828,7 +831,7 @@ class Exercise
                         '".Database::escape_string($pass_percentage)."'
 						)";
             Database::query($sql);
-            $this->id = Database::insert_id();
+            //$this->id = Database::insert_id();
 
             // insert into the item_property table
             api_item_property_update($this->course, TOOL_QUIZ, $this->id, 'QuizAdded', api_get_user_id());
@@ -843,7 +846,28 @@ class Exercise
         $this->update_question_positions();
     }
 
-    /* Updates question position */
+    /**
+     * Returns the max quiz id of a course
+     * @param string $courseId
+     * @return int $newId
+     */
+    function getMaxIdByCourse($courseId) {
+        $tblExercise = Database::get_course_table(TABLE_QUIZ_TEST);
+        $maxRow = Database::select('MAX(id) as maxId', $tblExercise, array('where' => array('c_id = ?' => $courseId)));
+
+        if (empty($maxRow)) {
+            $newId = 1;
+        } else {
+            $row = current($maxRow);
+            $newId = $row['maxId'] + 1;
+        }
+
+        return $newId;
+    }
+
+    /**
+     * Updates question position
+     */
     function update_question_positions() {
         $quiz_question_table = Database::get_course_table(TABLE_QUIZ_TEST_QUESTION);
         //Fixes #3483 when updating order

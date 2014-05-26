@@ -744,7 +744,11 @@ abstract class Question
 			$current_position = Database::result($result,0,0);
 			$this->updatePosition($current_position+1);
 			$position = $this->position;
-			$sql = "INSERT INTO $TBL_QUESTIONS (c_id, question, description, ponderation, position, type, picture, extra, level) VALUES (
+            $id = $this->getMaxIdByCourse($c_id);
+            $this->id = $id;
+
+            $sql = "INSERT INTO $TBL_QUESTIONS (id, c_id, question, description, ponderation, position, type, picture, extra, level) VALUES (
+			        $id,
 					$c_id,
 					'".Database::escape_string($question)."',
 					'".Database::escape_string($description)."',
@@ -756,8 +760,6 @@ abstract class Question
                     '".Database::escape_string($level)."'
 					)";
 			Database::query($sql);
-
-			$this->id = Database::insert_id();
 
 			api_item_property_update($this->course, TOOL_QUIZ, $this->id,'QuizQuestionAdded',api_get_user_id());
 
@@ -801,6 +803,25 @@ abstract class Question
 			$this->addToList($exerciseId, TRUE);
 		}
 	}
+
+    /**
+     * Returns the max question id by course
+     * @param string $courseId
+     * @return int $newId
+     */
+    function getMaxIdByCourse($courseId) {
+        $tblQuestion = Database::get_course_table(TABLE_QUIZ_QUESTION);
+        $maxRow = Database::select('MAX(id) as maxId', $tblQuestion, array('where' => array('c_id = ?' => $courseId)));
+
+        if (empty($maxRow)) {
+            $newId = 1;
+        } else {
+            $row = current($maxRow);
+            $newId = $row['maxId'] + 1;
+        }
+
+        return $newId;
+    }
 
     function search_engine_edit($exerciseId, $addQs=FALSE, $rmQs=FALSE) {
         // update search engine and its values table if enabled
