@@ -5,10 +5,8 @@
  *
  *	@package chamilo.library
  */
-/**
- *	@package chamilo.library
- */
-class SessionHandler {
+
+class SessionHandlerDatabase {
 
 	// TODO: Hm, these variables are public.
 	public $connection;

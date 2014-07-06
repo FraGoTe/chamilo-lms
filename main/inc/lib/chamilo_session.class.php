@@ -84,11 +84,41 @@ class ChamiloSession extends System\Session
           }
          */
 
-        if (self::session_stored_in_db() && function_exists('session_set_save_handler')) {
-            $handler = new SessionHandler();
-            @session_set_save_handler(array(& $handler, 'open'), array(& $handler, 'close'), array(& $handler, 'read'), array(& $handler, 'write'), array(& $handler, 'destroy'), array(& $handler, 'garbage'));
+        if ($_configuration['session_stored_in_db'] && function_exists('session_set_save_handler')) {
+            $handler = new SessionHandlerDatabase();
+            @session_set_save_handler(
+                array(& $handler, 'open'),
+                array(& $handler, 'close'),
+                array(& $handler, 'read'),
+                array(& $handler, 'write'),
+                array(& $handler, 'destroy'),
+                array(& $handler, 'garbage')
+            );
         }
 
+        if ($_configuration['session_stored_in_db_as_a_backup'] && function_exists('session_set_save_handler')) {
+
+            $handler = new CustomSessionHandlerDatabase();
+            @session_set_save_handler(
+                array(& $handler, 'open'),
+                array(& $handler, 'close'),
+                array(& $handler, 'read'),
+                array(& $handler, 'write'),
+                array(& $handler, 'destroy'),
+                array(& $handler, 'gc')
+            );
+            /*
+            $handler = new SessionHandlerDatabase();
+            @session_set_save_handler(
+                array(& $handler, 'open'),
+                array(& $handler, 'close'),
+                array(& $handler, 'read'),
+                array(& $handler, 'write'),
+                array(& $handler, 'destroy'),
+                array(& $handler, 'garbage')
+            );
+            */
+        }
         /*
          * Prevent Session fixation bug fixes  
          * See http://support.chamilo.org/issues/3600
@@ -129,7 +159,7 @@ class ChamiloSession extends System\Session
             $session->write('starttime', time());
         }*/
         // if the session time has expired, refresh the starttime value, so we're starting to count down from a later time
-        if ( $session->has('starttime') && $session->is_valid()) {
+        if ($session->has('starttime') && $session->is_valid()) {
             //error_log('Time expired, cancel session');
             $session->destroy();
         } else {
