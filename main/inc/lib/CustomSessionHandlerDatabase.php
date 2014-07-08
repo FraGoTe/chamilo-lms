@@ -105,6 +105,7 @@ class CustomSessionHandlerDatabase
 
     public function read($sessionID)
     {
+        error_log("=====================> READ <=====================");
         $data = $this->memcache->get($sessionID);
         if ($data === false) {
             //$sessionIDEscaped = mysql_real_escape_string($sessionID);
@@ -122,6 +123,7 @@ class CustomSessionHandlerDatabase
 
     public function write($sessionID, $data)
     {
+        error_log("=====================> WRITE <=====================");
         global $_configuration;
 
         $result = $this->memcache->set($sessionID, $data);
