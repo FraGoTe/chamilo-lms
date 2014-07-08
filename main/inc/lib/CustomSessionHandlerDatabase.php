@@ -22,6 +22,7 @@ class CustomSessionHandlerDatabase
                 $this->memcache->addServer($serverData['host'], $serverData['port']);
                 error_log("=====================> SERVER " . $serverData['host'] . "--" . $serverData['port'] . " <=====================");
             }
+            $this->memcache->connect('localhost');
         }
         $this->lifetime = 60; // 60 minutes
 
