@@ -14,9 +14,13 @@ class CustomSessionHandlerDatabase
 
     public function __construct() {
         global $_configuration;
-        //register_shutdown_function("session_write_close");
+
         $this->memcache = new Memcache;
-        $this->memcache->connect("localhost", 11211) or die ("Could not connect");
+        if (!empty($_configuration['memcache_server'])) {
+            foreach ($_configuration['memcache_server'] as $serverData) {
+                $this->memcache->addServer($serverData['host'], $serverData['port']);
+            }
+        }
 
         $this->lifetime = 60; // 60 minutes
 
@@ -68,14 +72,14 @@ class CustomSessionHandlerDatabase
     }
 
     public function sqlQuery($query, $dieOnError = true) {
-        $result = mysql_query($query, $this->connection_handler);
-
-        if ($dieOnError && !$result) {
-            $this->sqlClose();
-            return;
+        if ($this->connection_handler !== false) {
+            $result = mysql_query($query, $this->connection_handler);
+            if (!$dieOnError && $result) {
+                return $result;
+            }
         }
-
-        return $result;
+        $this->sqlClose();
+        return;
     }
 
     public function open($savePath, $sessionName) {
@@ -126,8 +130,8 @@ class CustomSessionHandlerDatabase
         }
 
         $interactions = $this->memcache->get('interactions');
-
-        if ($this->initSessionData !== $data && $_configuration['session_stored_after_n_time'] === $interactions) {
+        //$this->initSessionData !== $data #avoid this validation for performance improvements
+        if ($_configuration['session_stored_after_n_time'] === $interactions) {
             $sessionID = mysql_real_escape_string($sessionID);
             $sessionExpirationTS = ($this->lifeTime + time());
             $sessionData = mysql_real_escape_string($data);
