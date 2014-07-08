@@ -12,16 +12,17 @@ class CustomSessionHandlerDatabase
     public $memcache;
     public $initSessionData;
 
-    public function __construct() {
+    public function __construct()
+    {
         global $_configuration;
 
         $this->memcache = new Memcache;
         if (!empty($_configuration['memcache_server'])) {
             foreach ($_configuration['memcache_server'] as $serverData) {
                 $this->memcache->addServer($serverData['host'], $serverData['port']);
+                error_log("=====================> SERVER " . $serverData['host'] . "--" . $serverData['port'] . " <=====================");
             }
         }
-
         $this->lifetime = 60; // 60 minutes
 
         $this->connection = array (
@@ -34,7 +35,8 @@ class CustomSessionHandlerDatabase
         $this->connection_handler = false;
     }
 
-    public function sqlConnect() {
+    public function sqlConnect()
+    {
 
         if (!$this->connection_handler) {
             $this->connection_handler = @mysql_connect($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
@@ -60,7 +62,8 @@ class CustomSessionHandlerDatabase
         return $this->connection_handler ? true : false;
     }
 
-    public function sqlClose() {
+    public function sqlClose()
+    {
 
         if ($this->connection_handler) {
             mysql_close($this->connection_handler);
@@ -91,7 +94,8 @@ class CustomSessionHandlerDatabase
         return true;
     }
 
-    public function close() {
+    public function close()
+    {
         $this->lifeTime = null;
         $this->memcache = null;
         $this->initSessionData = null;
@@ -99,7 +103,8 @@ class CustomSessionHandlerDatabase
         return true;
     }
 
-    public function read($sessionID) {
+    public function read($sessionID)
+    {
         $data = $this->memcache->get($sessionID);
         if ($data === false) {
             //$sessionIDEscaped = mysql_real_escape_string($sessionID);
@@ -115,7 +120,8 @@ class CustomSessionHandlerDatabase
         return $data;
     }
 
-    public function write($sessionID, $data) {
+    public function write($sessionID, $data)
+    {
         global $_configuration;
 
         $result = $this->memcache->set($sessionID, $data);
@@ -155,7 +161,8 @@ class CustomSessionHandlerDatabase
         return false;
     }
 
-    public function destroy($sessionID) {
+    public function destroy($sessionID)
+    {
         $this->memcache->delete($sessionID);
         $sessionID = mysql_real_escape_string($sessionID);
         if ($this->sqlConnect()) {
@@ -166,7 +173,8 @@ class CustomSessionHandlerDatabase
         return false;
     }
 
-    public function gc($maxlifetime) {
+    public function gc($maxlifetime)
+    {
         if ($this->sqlConnect()) {
             $result = $this->sqlQuery("SELECT COUNT(session_id) FROM ".$this->connection['base'].".php_session");
             list($nbr_results) = Database::fetch_row($result);
