@@ -19,10 +19,10 @@ class CustomSessionHandlerDatabase
         $this->memcache = new Memcache;
         if (!empty($_configuration['memcache_server'])) {
             foreach ($_configuration['memcache_server'] as $serverData) {
-                $this->memcache->addServer($serverData['host'], $serverData['port']);
+                $this->memcache->addServer($serverData['host'], $serverData['port']) or die('could not connect');
                 error_log("=====================> SERVER " . $serverData['host'] . "--" . $serverData['port'] . " <=====================");
             }
-            $this->memcache->connect('localhost');
+            $this->memcache->connect('localhost') or die('could not connect');
         }
         $this->lifetime = 60; // 60 minutes
 
