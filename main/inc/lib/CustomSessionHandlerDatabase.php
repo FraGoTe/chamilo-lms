@@ -111,7 +111,7 @@ class CustomSessionHandlerDatabase
         if ($data === false) {
             //$sessionIDEscaped = mysql_real_escape_string($sessionID);
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
-
+            error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
             if (is_resource($result) && (mysql_num_rows($result) !== 0)) {
                 $data = mysql_result($result, 0, "session_value");
             }
@@ -152,6 +152,9 @@ class CustomSessionHandlerDatabase
                 $result = $this->sqlQuery("INSERT INTO ".$this->connection['base'].".php_session(
                     session_id,session_name,session_time,session_start,session_value)
                     VALUES('$sessionID','".$this->session_name."','$sessionExpirationTS','$sessionExpirationTS','".addslashes($sessionData)."')", false);
+                 error_log("INSERT INTO ".$this->connection['base'].".php_session(
+                    session_id,session_name,session_time,session_start,session_value)
+                    VALUES('$sessionID','".$this->session_name."','$sessionExpirationTS','$sessionExpirationTS','".addslashes($sessionData)."')");
                 if (!$result) {
                     $this->sqlQuery("UPDATE ".$this->connection['base'].".php_session
                         SET session_name='".$this->session_name."',session_time='$sessionExpirationTS',session_value='".addslashes($sessionData)."'
