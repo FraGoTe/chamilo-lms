@@ -140,8 +140,8 @@ class CustomSessionHandlerDatabase
         $interactions = $this->memcache->get('interactions');
         //$this->initSessionData !== $data #avoid this validation for performance improvements
 
-        error_log("=====================> " . $interactions . " <=====================");
-        error_log("=====================> " . $_configuration['session_stored_after_n_time'] . " <=====================");
+        error_log("=====================> Interactions: " . $interactions . " <=====================");
+        error_log("=====================> Config: " . $_configuration['session_stored_after_n_time'] . " <=====================");
         if ($_configuration['session_stored_after_n_time'] === $interactions) {
             $sessionID = mysql_real_escape_string($sessionID);
             $sessionExpirationTS = ($this->lifeTime + time());
