@@ -19,6 +19,10 @@ class CustomSessionHandlerDatabase
         $this->memcache = new Memcache;
         if (!empty($_configuration['memcache_server'])) {
             foreach ($_configuration['memcache_server'] as $serverData) {
+                $isServerAvailable = @fsockopen($serverData['host'], $serverData['port']);
+                if (!$isServerAvailable){
+                    continue;
+                }
                 $this->memcache->addServer($serverData['host'], $serverData['port']);
                 error_log("=====================> SERVER " . $serverData['host'] . "--" . $serverData['port'] . " <=====================");
             }
