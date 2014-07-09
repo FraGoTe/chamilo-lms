@@ -104,7 +104,7 @@ class CustomSessionHandlerDatabase
         $this->memcache = null;
         $this->initSessionData = null;
 
-        return true;
+        return $this->gc(0) ? true : false;
     }
 
     public function read($sessionID)
@@ -115,11 +115,8 @@ class CustomSessionHandlerDatabase
             //$sessionIDEscaped = mysql_real_escape_string($sessionID);
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
             error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
-            if (is_resource($result) && (mysql_num_rows($result) !== 0)) {
-                $data = mysql_result($result, 0, "session_value");
-                error_log("======||DATA||=======");
-                error_log($data);
-                error_log("=================");
+            if ($row = mysql_fetch_assoc($result)) {
+                $data = $row['session_value'];
             }
 
             $this->memcache->set($sessionID, $data);
