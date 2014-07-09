@@ -117,6 +117,9 @@ class CustomSessionHandlerDatabase
             error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
             if (is_resource($result) && (mysql_num_rows($result) !== 0)) {
                 $data = mysql_result($result, 0, "session_value");
+                error_log("======||DATA||=======");
+                error_log($data);
+                error_log("=================");
             }
 
             $this->memcache->set($sessionID, $data);
