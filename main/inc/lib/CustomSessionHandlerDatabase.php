@@ -82,6 +82,9 @@ class CustomSessionHandlerDatabase
         $result = mysql_query($query, $this->connection_handler);
 
         if ($dieOnError && !$result) {
+            error_log("ERRRRRRRRRRRRORRRRRRRRRRRRR!");
+            var_dump($query, $this->connection_handler);
+            exit;
             $this->sqlClose();
             return;
         }
@@ -116,7 +119,7 @@ class CustomSessionHandlerDatabase
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
             error_log("SELECT QUERY");
             error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
-            error_log("RESULT!" . serialize($result) . "------" . print_r($result));
+            error_log("RESULT!------" . print_r($result));
             var_dump($result);Exit;
             if (!empty($result) && $result !== false && $row = Database::fetch_row($result)) {
                 $data = $row['session_value'];
