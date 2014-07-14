@@ -113,10 +113,6 @@ class CustomSessionHandlerDatabase
         $data = $this->memcache->get($sessionID);
         if (($data === false || empty($data)) && $this->sqlConnect()) {
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
-            error_log("SELECT QUERY");
-            error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
-            error_log("RESULT!------" . print_r($result));
-            var_dump($result);Exit;
             if (!empty($result) && $result !== false && $row = Database::fetch_row($result)) {
                 $data = $row['session_value'];
                 $this->memcache->set($sessionID, $data);
