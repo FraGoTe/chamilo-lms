@@ -114,12 +114,13 @@ class CustomSessionHandlerDatabase
         if ($data === false) {
             //$sessionIDEscaped = mysql_real_escape_string($sessionID);
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
-            error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
-            if ($row = mysql_fetch_assoc($result)) {
-                $data = $row['session_value'];
-            }
 
-            $this->memcache->set($sessionID, $data);
+            if (!empty($result) && $result !== false && $row = Database::fetch_row($result)) {
+                $data = $row['session_value'];
+                $this->memcache->set($sessionID, $data);
+            } else {
+                $data = false;
+            }
         }
 
         return $data;
@@ -173,7 +174,6 @@ class CustomSessionHandlerDatabase
     public function destroy($sessionID)
     {
         $this->memcache->delete($sessionID);
-        $sessionID = mysql_real_escape_string($sessionID);
         if ($this->sqlConnect()) {
             $this->sqlQuery("DELETE FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
             return true;
