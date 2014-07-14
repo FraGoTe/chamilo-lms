@@ -41,9 +41,9 @@ class CustomSessionHandlerDatabase
 
     public function sqlConnect()
     {
-        $conectionId = false;
+        $conectionStatus = false;
         if (!$this->connection_handler) {
-            $conectionId = $this->connection_handler = @mysql_connect($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
+            $this->connection_handler = @mysql_connect($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
 
             // The system has not been designed to use special SQL modes that were introduced since MySQL 5
             @mysql_query("set session sql_mode='';", $this->connection_handler);
@@ -61,9 +61,10 @@ class CustomSessionHandlerDatabase
             } else {
                 @mysql_query("SET CHARACTER SET '" . Database::to_db_encoding($system_encoding) . "';", $this->connection_handler);
             }
+            $conectionStatus = true;
         }
 
-        return $conectionId;
+        return $conectionStatus;
     }
 
     public function sqlClose()
@@ -79,14 +80,8 @@ class CustomSessionHandlerDatabase
     }
 
     public function sqlQuery($query, $dieOnError = true) {
-        global $_configuration;
         $result = mysql_query($query, $this->connection_handler);
         if ($dieOnError && !$result) {
-            error_log("ERRRRRRRRRRRRORRRRRRRRRRRRR!");
-            var_dump($query, $this->connection_handler);
-            var_dump($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
-            var_dump($_configuration);
-            exit;
             $this->sqlClose();
             return;
         }
@@ -116,8 +111,7 @@ class CustomSessionHandlerDatabase
     {
         error_log("=====================> READ <=====================");
         $data = $this->memcache->get($sessionID);
-        if ($data === false || empty($data)) {
-
+        if (($data === false || empty($data)) && $this->sqlConnect()) {
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
             error_log("SELECT QUERY");
             error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
