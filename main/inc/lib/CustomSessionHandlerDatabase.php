@@ -81,10 +81,9 @@ class CustomSessionHandlerDatabase
     public function sqlQuery($query, $dieOnError = true) {
         if ($this->connection_handler !== false) {
             $result = mysql_query($query, $this->connection_handler);
-            error("First param:" . !$dieOnError);
-            error("Second param:" . $result);
-            error((!$dieOnError && $result));
-            error_log(!$dieOnError && $result);
+            error_log("First param:" . !$dieOnError);
+            error_log("Second param:" . $result);
+            error_log((!$dieOnError && $result));
             if (!$dieOnError && $result) {
                 return $result;
             }
