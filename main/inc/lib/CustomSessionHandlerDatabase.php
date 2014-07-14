@@ -111,10 +111,12 @@ class CustomSessionHandlerDatabase
     {
         error_log("=====================> READ <=====================");
         $data = $this->memcache->get($sessionID);
-        if ($data === false) {
-            //$sessionIDEscaped = mysql_real_escape_string($sessionID);
-            $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
+        if ($data === false || empty($data)) {
 
+            $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
+            error_log("SELECT QUERY");
+            error_log("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
+            error_log("RESULT!" . serialize($result) . "------" . print_r($result));
             if (!empty($result) && $result !== false && $row = Database::fetch_row($result)) {
                 $data = $row['session_value'];
                 $this->memcache->set($sessionID, $data);
