@@ -27,7 +27,7 @@ class CustomSessionHandlerDatabase
                 error_log("=====================> SERVER " . $serverData['host'] . "--" . $serverData['port'] . " <=====================");
             }
         }
-        $this->lifetime = 60; // 60 minutes
+        $this->lifetime = 3600; // 60 minutes
 
         $this->connection = array (
             'server' => $_configuration['db_host'],
@@ -79,11 +79,13 @@ class CustomSessionHandlerDatabase
     }
 
     public function sqlQuery($query, $dieOnError = true) {
+        global $_configuration;
         $result = mysql_query($query, $this->connection_handler);
-
         if ($dieOnError && !$result) {
             error_log("ERRRRRRRRRRRRORRRRRRRRRRRRR!");
             var_dump($query, $this->connection_handler);
+            var_dump($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
+            var_dump($_configuration);
             exit;
             $this->sqlClose();
             return;
