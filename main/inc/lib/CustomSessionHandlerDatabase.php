@@ -41,9 +41,9 @@ class CustomSessionHandlerDatabase
 
     public function sqlConnect()
     {
-
+        $conectionId = false;
         if (!$this->connection_handler) {
-            $this->connection_handler = @mysql_connect($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
+            $conectionId = $this->connection_handler = @mysql_connect($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
 
             // The system has not been designed to use special SQL modes that were introduced since MySQL 5
             @mysql_query("set session sql_mode='';", $this->connection_handler);
@@ -63,7 +63,7 @@ class CustomSessionHandlerDatabase
             }
         }
 
-        return $this->connection_handler ? true : false;
+        return $conectionId;
     }
 
     public function sqlClose()
