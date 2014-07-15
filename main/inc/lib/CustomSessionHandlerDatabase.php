@@ -112,11 +112,13 @@ class CustomSessionHandlerDatabase
         if (($data === false || empty($data)) && $this->sqlConnect()) {
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
             if (!empty($result) && $result !== false && $row = Database::fetch_row($result)) {
-                $data = $row[0];
+                $data = stripslashes($row[0]);
                 $this->memcache->set($sessionID, $data);
             } else {
                 $data = false;
             }
+        } else {
+            $data = stripslashes($data);
         }
 
         return $data;
@@ -143,7 +145,7 @@ class CustomSessionHandlerDatabase
 
         error_log("=====================> Interactions: " . $interactions . " <=====================");
         error_log("=====================> Config: " . $_configuration['session_stored_after_n_time'] . " <=====================");
-        if ($_configuration['session_stored_after_n_time'] === $interactions || !api_is_anonymous()) {
+        if ($_configuration['session_stored_after_n_time'] === $interactions) {
             $sessionID = mysql_real_escape_string($sessionID);
             $sessionExpirationTS = ($this->lifeTime + time());
             $sessionData = mysql_real_escape_string($data);
