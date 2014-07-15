@@ -41,7 +41,6 @@ class CustomSessionHandlerDatabase
 
     public function sqlConnect()
     {
-        $conectionStatus = false;
         if (!$this->connection_handler) {
             $this->connection_handler = @mysql_connect($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
 
@@ -61,10 +60,9 @@ class CustomSessionHandlerDatabase
             } else {
                 @mysql_query("SET CHARACTER SET '" . Database::to_db_encoding($system_encoding) . "';", $this->connection_handler);
             }
-            $conectionStatus = true;
         }
 
-        return $conectionStatus;
+        return ($this->connection_handler) ? true : false;
     }
 
     public function sqlClose()
