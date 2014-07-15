@@ -129,7 +129,8 @@ class CustomSessionHandlerDatabase
         global $_configuration;
 
         $this->memcache->set($sessionID, $data);
-        if ($interactions = $this->memcache->get('interactions')) {
+        if ($this->memcache->get('interactions') !== false) {
+            $interactions = $this->memcache->get('interactions');
             ++$interactions;
             if ($_configuration['session_stored_after_n_time'] < $interactions) {
                 $interactions = 1;
