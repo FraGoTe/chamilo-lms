@@ -129,20 +129,20 @@ class CustomSessionHandlerDatabase
         global $_configuration;
 
         $this->memcache->set($sessionID, $data);
-        if ($this->memcache->get('interactions') !== false) {
-            $interactions = $this->memcache->get('interactions');
+        if ($this->memcache->get('interactions-' . $sessionID) !== false) {
+            $interactions = $this->memcache->get('interactions-' . $sessionID);
             ++$interactions;
             if ($_configuration['session_stored_after_n_time'] < $interactions) {
                 $interactions = 1;
             }
-            $this->memcache->set('interactions', $interactions);
+            $this->memcache->set('interactions-' . $sessionID, $interactions);
         } else {
-            $this->memcache->set('interactions', 1);
+            $this->memcache->set('interactions-' . $sessionID, 1);
         }
 
-        $interactions = $this->memcache->get('interactions');
+        $interactions = $this->memcache->get('interactions-' . $sessionID);
         //$this->initSessionData !== $data #avoid this validation for performance improvements
-
+        error_log("|=====> Interactions : " . $interactions);
         if ($_configuration['session_stored_after_n_time'] === $interactions) {
             $sessionID = mysql_real_escape_string($sessionID);
             $sessionExpirationTS = ($this->lifeTime + time());
