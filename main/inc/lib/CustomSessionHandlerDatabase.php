@@ -41,13 +41,14 @@ class CustomSessionHandlerDatabase
 
     public function sqlConnect()
     {
+        global $_configuration;
         if (!$this->connection_handler) {
-            $this->connection_handler = @mysql_connect($this->connection['server'], $this->connection['login'], $this->connection['password'], true);
+            $this->connection_handler = @mysql_connect($_configuration['server'], $_configuration['login'], $_configuration['password'], true);
 
             // The system has not been designed to use special SQL modes that were introduced since MySQL 5
             @mysql_query("set session sql_mode='';", $this->connection_handler);
 
-            @mysql_select_db($this->connection['base'], $this->connection_handler);
+            @mysql_select_db($_configuration['base'], $this->connection_handler);
 
             // Initialization of the database connection encoding to be used.
             // The internationalization library should be already initialized.
@@ -107,10 +108,11 @@ class CustomSessionHandlerDatabase
 
     public function read($sessionID)
     {
+        global $_configuration;
         error_log("=====================> READ <=====================");
         $data = $this->memcache->get($sessionID);
         if (($data === false || empty($data)) && $this->sqlConnect()) {
-            $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
+            $result = $this->sqlQuery("SELECT session_value FROM ".$_configuration['base'].".php_session WHERE session_id='$sessionID'");
             if (!empty($result) && $result !== false && $row = Database::fetch_row($result)) {
                 $data = $row[0];
                 $this->memcache->set($sessionID, $data);
@@ -149,14 +151,14 @@ class CustomSessionHandlerDatabase
             $sessionData = mysql_real_escape_string($data);
 
              if ($this->sqlConnect()) {
-                $result = $this->sqlQuery("INSERT INTO ".$this->connection['base'].".php_session(
+                $result = $this->sqlQuery("INSERT INTO ".$_configuration['base'].".php_session(
                     session_id,session_name,session_time,session_start,session_value)
                     VALUES('$sessionID','".$this->session_name."','$sessionExpirationTS','$sessionExpirationTS','".addslashes($sessionData)."')", false);
-                 error_log("INSERT INTO ".$this->connection['base'].".php_session(
+                 error_log("INSERT INTO ".$_configuration['base'].".php_session(
                     session_id,session_name,session_time,session_start,session_value)
                     VALUES('$sessionID','".$this->session_name."','$sessionExpirationTS','$sessionExpirationTS','".addslashes($sessionData)."')");
                 if (!$result) {
-                    $this->sqlQuery("UPDATE ".$this->connection['base'].".php_session
+                    $this->sqlQuery("UPDATE ".$_configuration['base'].".php_session
                         SET session_name='".$this->session_name."',session_time='$sessionExpirationTS',session_value='".addslashes($sessionData)."'
                         WHERE session_id='$sessionID'");
                 }
@@ -169,9 +171,10 @@ class CustomSessionHandlerDatabase
 
     public function destroy($sessionID)
     {
+        global $_configuration;
         $this->memcache->delete($sessionID);
         if ($this->sqlConnect()) {
-            $this->sqlQuery("DELETE FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
+            $this->sqlQuery("DELETE FROM ".$_configuration['base'].".php_session WHERE session_id='$sessionID'");
             return true;
         }
 
@@ -180,12 +183,13 @@ class CustomSessionHandlerDatabase
 
     public function gc($maxlifetime)
     {
+        global $_configuration;
         if ($this->sqlConnect()) {
-            $result = $this->sqlQuery("SELECT COUNT(session_id) FROM ".$this->connection['base'].".php_session");
+            $result = $this->sqlQuery("SELECT COUNT(session_id) FROM ".$_configuration['base'].".php_session");
             list($nbr_results) = Database::fetch_row($result);
 
             if ($nbr_results > 5000) {
-                $this->sqlQuery("DELETE FROM ".$this->connection['base'].".php_session WHERE session_time<'".strtotime('-'.$this->lifetime.' minutes')."'");
+                $this->sqlQuery("DELETE FROM ".$_configuration['base'].".php_session WHERE session_time<'".strtotime('-'.$this->lifetime.' minutes')."'");
             }
 
             $this->sqlClose();
