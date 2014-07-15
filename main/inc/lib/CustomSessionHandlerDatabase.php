@@ -143,7 +143,7 @@ class CustomSessionHandlerDatabase
 
         error_log("=====================> Interactions: " . $interactions . " <=====================");
         error_log("=====================> Config: " . $_configuration['session_stored_after_n_time'] . " <=====================");
-        if ($_configuration['session_stored_after_n_time'] === $interactions) {
+        if ($_configuration['session_stored_after_n_time'] === $interactions || !api_is_anonymous()) {
             $sessionID = mysql_real_escape_string($sessionID);
             $sessionExpirationTS = ($this->lifeTime + time());
             $sessionData = mysql_real_escape_string($data);
