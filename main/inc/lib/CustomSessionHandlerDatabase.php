@@ -24,7 +24,6 @@ class CustomSessionHandlerDatabase
                     continue;
                 }
                 $this->memcache->addServer($serverData['host'], $serverData['port']);
-                error_log("=====================> SERVER " . $serverData['host'] . "--" . $serverData['port'] . " <=====================");
             }
         }
         $this->lifetime = 3600; // 60 minutes
@@ -77,7 +76,8 @@ class CustomSessionHandlerDatabase
         return false;
     }
 
-    public function sqlQuery($query, $dieOnError = true) {
+    public function sqlQuery($query, $dieOnError = true)
+    {
         $result = mysql_query($query, $this->connection_handler);
         if ($dieOnError && !$result) {
             $this->sqlClose();
@@ -87,7 +87,8 @@ class CustomSessionHandlerDatabase
         return $result;
     }
 
-    public function open($savePath, $sessionName) {
+    public function open($savePath, $sessionName)
+    {
         $sessionID = session_id();
         if ($sessionID !== "") {
             $this->initSessionData = $this->read($sessionID);
@@ -107,7 +108,6 @@ class CustomSessionHandlerDatabase
 
     public function read($sessionID)
     {
-        error_log("=====================> READ <=====================");
         $data = $this->memcache->get($sessionID);
         if (($data === false || empty($data)) && $this->sqlConnect()) {
             $result = $this->sqlQuery("SELECT session_value FROM ".$this->connection['base'].".php_session WHERE session_id='$sessionID'");
@@ -126,10 +126,9 @@ class CustomSessionHandlerDatabase
 
     public function write($sessionID, $data)
     {
-        error_log("=====================> WRITE <=====================");
         global $_configuration;
 
-        $result = $this->memcache->set($sessionID, $data);
+        $this->memcache->set($sessionID, $data);
         if ($interactions = $this->memcache->get('interactions')) {
             ++$interactions;
             if ($_configuration['session_stored_after_n_time'] < $interactions) {
@@ -143,8 +142,6 @@ class CustomSessionHandlerDatabase
         $interactions = $this->memcache->get('interactions');
         //$this->initSessionData !== $data #avoid this validation for performance improvements
 
-        error_log("=====================> Interactions: " . $interactions . " <=====================");
-        error_log("=====================> Config: " . $_configuration['session_stored_after_n_time'] . " <=====================");
         if ($_configuration['session_stored_after_n_time'] === $interactions) {
             $sessionID = mysql_real_escape_string($sessionID);
             $sessionExpirationTS = ($this->lifeTime + time());
@@ -154,9 +151,7 @@ class CustomSessionHandlerDatabase
                 $result = $this->sqlQuery("INSERT INTO ".$this->connection['base'].".php_session(
                     session_id,session_name,session_time,session_start,session_value)
                     VALUES('$sessionID','".$this->session_name."','$sessionExpirationTS','$sessionExpirationTS','".addslashes($sessionData)."')", false);
-                 error_log("INSERT INTO ".$this->connection['base'].".php_session(
-                    session_id,session_name,session_time,session_start,session_value)
-                    VALUES('$sessionID','".$this->session_name."','$sessionExpirationTS','$sessionExpirationTS','".addslashes($sessionData)."')");
+
                 if (!$result) {
                     $this->sqlQuery("UPDATE ".$this->connection['base'].".php_session
                         SET session_name='".$this->session_name."',session_time='$sessionExpirationTS',session_value='".addslashes($sessionData)."'
