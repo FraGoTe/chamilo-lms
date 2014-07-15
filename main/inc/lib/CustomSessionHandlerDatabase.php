@@ -145,7 +145,7 @@ class CustomSessionHandlerDatabase
         error_log("|=====> Interactions : " . $interactions);
         if ($_configuration['session_stored_after_n_time'] === $interactions) {
             $sessionID = mysql_real_escape_string($sessionID);
-            $sessionExpirationTS = ($this->lifeTime + time());
+            $sessionExpirationTS = ($this->lifetime + time());
             $sessionData = mysql_real_escape_string($data);
 
              if ($this->sqlConnect()) {
