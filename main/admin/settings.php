@@ -10,25 +10,10 @@
  * @package chamilo.admin
  */
 
-/* INIT SECTION */
-
-// Language files that need to be included.
-if (isset($_GET['category']) && $_GET['category'] == 'Templates') {
-    $language_file = array('admin', 'document');
-} else {
-    if (isset($_GET['category']) && $_GET['category'] == 'Gradebook') {
-        $language_file = array('admin', 'gradebook');
-    } else {
-        $language_file = array('admin', 'document');
-    }
-}
-$language_file[] = 'tracking';
-
 // Resetting the course id.
 $cidReset = true;
 
 // Including some necessary library files.
-require_once '../inc/global.inc.php';
 require_once 'settings.lib.php';
 
 // Setting the section (for the tabs).
@@ -336,7 +321,7 @@ if (!empty($_GET['category']) && !in_array($_GET['category'], array('Plugins', '
         // Add event configuration settings category to the system log.
         $user_id = api_get_user_id();
         $category = $_GET['category'];
-        event_system(
+        Event::addEvent(
             LOG_CONFIGURATION_SETTINGS_CHANGE,
             LOG_CONFIGURATION_SETTINGS_CATEGORY,
             $category,
@@ -352,7 +337,7 @@ if (!empty($_GET['category']) && !in_array($_GET['category'], array('Plugins', '
                 if (in_array($key, $settings_to_avoid)) {
                     continue;
                 }
-                event_system(
+                Event::addEvent(
                     LOG_CONFIGURATION_SETTINGS_CHANGE,
                     LOG_CONFIGURATION_SETTINGS_VARIABLE,
                     $variable,
@@ -502,7 +487,7 @@ if (!empty($_GET['category'])) {
                     // add event to system log
                     $user_id = api_get_user_id();
                     $category = $_GET['category'];
-                    event_system(
+                    Event::addEvent(
                         LOG_CONFIGURATION_SETTINGS_CHANGE,
                         LOG_CONFIGURATION_SETTINGS_CATEGORY,
                         $category,

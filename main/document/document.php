@@ -40,6 +40,9 @@ $lib_path = api_get_path(LIBRARY_PATH);
 api_protect_course_script(true);
 
 $to_user_id = api_get_user_id();
+$_course = api_get_course_info();
+$_user = api_get_user_info();
+$charset = api_get_system_encoding();
 
 //erase temp nanogons' audio, image edit
 if (isset($_SESSION['temp_audio_nanogong']) && !empty($_SESSION['temp_audio_nanogong'])) {
@@ -583,7 +586,7 @@ $(document).ready( function() {
 Display::display_header('', 'Doc');
 
 // Lib for event log, stats & tracking & record of the access
-event_access_tool(TOOL_DOCUMENT);
+Event::event_access_tool(TOOL_DOCUMENT);
 
 /* 	DISPLAY */
 if ($to_group_id != 0) { // Add group name after for group documents

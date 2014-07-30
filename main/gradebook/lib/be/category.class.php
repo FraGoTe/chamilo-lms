@@ -1,17 +1,10 @@
 <?php
 /* For licensing terms, see /license.txt */
 /**
+ * Class Category
  * Defines a gradebook Category object
  * @package chamilo.gradebook
  */
-/**
- * Init
- */
-/**
- * Class
- * @package chamilo.gradebook
- */
-
 
 class Category implements GradebookItem
 {
@@ -125,7 +118,6 @@ class Category implements GradebookItem
         return $this->course_id;
     }
 
-
     public function set_certificate_min_score($min_score = null)
     {
         $this->certificate_min_score = $min_score;
@@ -181,7 +173,7 @@ class Category implements GradebookItem
             $cat_id = $this->get_id();
 
             $gradebook = new Gradebook();
-            $skills    = $gradebook->get_skills_by_gradebook($cat_id);
+            $skills = $gradebook->get_skills_by_gradebook($cat_id);
         } else {
             $skills = $this->skills;
         }
@@ -191,10 +183,10 @@ class Category implements GradebookItem
 
     public function get_skills_for_select()
     {
-        $skills       = $this->get_skills();
+        $skills = $this->get_skills();
         $skill_select = array();
         if (!empty($skills)) {
-            foreach ($skills as $skill) {
+            foreach($skills as $skill) {
                 $skill_select[$skill['id']] = $skill['name'];
             }
         }
@@ -202,7 +194,43 @@ class Category implements GradebookItem
         return $skill_select;
     }
 
-    // CRUD FUNCTIONS
+    /**
+     * @param int $id
+     * @param int $session_id
+     *
+     * @return array
+     */
+    public static function load_session_categories($id = null, $session_id = null)
+    {
+        if (isset($id) && (int)$id === 0) {
+            $cats = array();
+            $cats[] = Category::create_root_category();
+            return $cats;
+        }
+
+        $courseCode = api_get_course_info(api_get_course_id());
+        $courseCode = $courseCode['code'];
+        $session_id = intval($session_id);
+
+        if (!empty($session_id)) {
+             $tbl_grade_categories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
+             $sql = 'SELECT id, course_code FROM '.$tbl_grade_categories. '
+                     WHERE session_id = '.$session_id;
+             $result_session = Database::query($sql);
+             if (Database::num_rows($result_session) > 0) {
+                $categoryList = array();
+                while ($data_session = Database::fetch_array($result_session)) {
+                    $parent_id = $data_session['id'];
+                    if ($data_session['course_code'] == $courseCode) {
+                        $categories = Category::load($parent_id);
+                        $categoryList = array_merge($categoryList, $categories);
+                        //$allSubCategories = Category::load(null,null,null, $parent_id, null, $session_id, null);
+                    }
+                }
+                return $categoryList;
+             }
+        }
+    }
 
     /**
      * Retrieve categories and return them as an array of Category objects
@@ -214,8 +242,6 @@ class Category implements GradebookItem
      * @param int      session id (in case we are in a session)
      * @param bool     Whether to show all "session" categories (true) or hide them (false) in case there is no session id
      */
-
-
     public static function load(
         $id = null,
         $user_id = null,
@@ -228,20 +254,21 @@ class Category implements GradebookItem
         //if the category given is explicitly 0 (not null), then create
         // a root category object (in memory)
         if (isset($id) && (int)$id === 0) {
-            $cats   = array();
+            $cats = array();
             $cats[] = Category::create_root_category();
 
             return $cats;
         }
 
         $tbl_grade_categories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
-        $sql                  = 'SELECT * FROM '.$tbl_grade_categories;
-        $paramcount           = 0;
+        $sql = 'SELECT * FROM '.$tbl_grade_categories;
+        $paramcount = 0;
         if (isset($id)) {
             $id = Database::escape_string($id);
-            $sql .= ' WHERE id = '.intval($id);
-            $paramcount++;
+            $sql.= ' WHERE id = '.intval($id);
+            $paramcount ++;
         }
+
         if (isset($user_id)) {
             $user_id = intval($user_id);
             if ($paramcount != 0) {
@@ -293,6 +320,7 @@ class Category implements GradebookItem
             $sql .= ' parent_id = '.intval($parent_id);
             $paramcount++;
         }
+
         if (isset($visible)) {
             $visible = Database::escape_string($visible);
             if ($paramcount != 0) {
@@ -301,7 +329,6 @@ class Category implements GradebookItem
                 $sql .= ' WHERE';
             }
             $sql .= ' visible = '.intval($visible);
-            $paramcount++;
         }
 
         if (!empty($order_by)) {
@@ -311,6 +338,7 @@ class Category implements GradebookItem
         }
         $result = Database::query($sql);
         $allcat = array();
+
         if (Database::num_rows($result) > 0) {
             $allcat = Category::create_category_objects_from_sql_result($result);
         }
@@ -367,7 +395,7 @@ class Category implements GradebookItem
 
         if (isset($this->name) && isset($this->user_id)) {
             $tbl_grade_categories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
-            $sql                  = 'INSERT INTO '.$tbl_grade_categories.' (name,user_id,weight,visible';
+            $sql = 'INSERT INTO '.$tbl_grade_categories.' (name,user_id,weight,visible';
             if (isset($this->description)) {
                 $sql .= ',description';
             }
@@ -375,7 +403,7 @@ class Category implements GradebookItem
                 $sql .= ',course_code';
             }
             if (isset($this->parent)) {
-                $sql .= ',parent_id';
+                 $sql .= ',parent_id';
             }
             if (!empty($this->session_id)) {
                 $sql .= ', session_id';
@@ -387,7 +415,6 @@ class Category implements GradebookItem
             if (isset($this->certificate_min_score) && !empty($this->certificate_min_score)) {
                 $sql .= ', certif_min_score ';
             }
-
 
             /*
             $setting = api_get_setting('tool_visible_by_default_at_creation');
@@ -547,8 +574,11 @@ class Category implements GradebookItem
 
 
         $gradebook = new Gradebook();
-        $gradebook->update_skills_to_gradebook($this->id, $this->get_skills(false));
-
+        $gradebook->update_skills_to_gradebook(
+            $this->id,
+            $this->get_skills(false),
+            false
+        );
     }
 
     /**
@@ -557,8 +587,6 @@ class Category implements GradebookItem
      */
     function update_children_weight($new_weight)
     {
-
-        //$evals = $this->get_evaluations();
         $links      = $this->get_links();
         $old_weight = $this->get_weight();
 
@@ -590,9 +618,7 @@ class Category implements GradebookItem
     public function update_category_delete($course_id)
     {
         $tbl_grade_categories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
-        $sql                  = 'UPDATE '.$tbl_grade_categories.' SET visible=3 WHERE course_code ="'.Database::escape_string(
-                $course_id
-            ).'"';
+        $sql = 'UPDATE '.$tbl_grade_categories.' SET visible=3 WHERE course_code ="'.Database::escape_string($course_id).'"';
         Database::query($sql);
     }
 
@@ -602,12 +628,13 @@ class Category implements GradebookItem
     public function show_message_resource_delete($course_id)
     {
         $tbl_grade_categories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
-        $sql                  = 'SELECT count(*) AS num from '.$tbl_grade_categories.' WHERE course_code ="'.Database::escape_string(
-                $course_id
-            ).'" AND visible=3';
-        $res                  = Database::query($sql);
-        $option               = Database::fetch_array($res, 'ASSOC');
-        if ($option['num'] >= 1) {
+        $sql = 'SELECT count(*) AS num from '.$tbl_grade_categories.'
+                WHERE
+                    course_code = "'.Database::escape_string($course_id).'" AND
+                    visible=3';
+        $res = Database::query($sql);
+        $option = Database::fetch_array($res, 'ASSOC');
+        if ($option['num']>=1) {
             return '&nbsp;&nbsp;<span class="resource-deleted">(&nbsp;'.get_lang('ResourceDeleted').'&nbsp;)</span>';
         } else {
             return false;
@@ -623,17 +650,13 @@ class Category implements GradebookItem
             return null;
         } else {
             $tbl_category = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
-            $sql          = 'SELECT name,description,user_id,course_code,parent_id,weight,visible,certif_min_score,session_id
-                    FROM '.$tbl_category.' c
-                    WHERE c.id = '.intval($selectcat);
+             $sql='SELECT name,description,user_id,course_code,parent_id,weight,visible,certif_min_score,session_id FROM '.$tbl_category.' c WHERE c.id='.intval($selectcat);
             $result       = Database::query($sql);
             $row          = Database::fetch_array($result, 'ASSOC');
 
             return $row;
         }
     }
-
-// OTHER FUNCTIONS
 
     /**
      * Check if a category name (with the same parent category) already exists
@@ -712,7 +735,7 @@ class Category implements GradebookItem
      * Calculate the score of this category
      * @param $stud_id student id (default: all students - then the average is returned)
      * @return    array (score sum, weight sum)
-     *            or null if no scores available
+     *             or null if no scores available
      */
     public function calc_score($stud_id = null, $course_code = '', $session_id = null)
     {
@@ -733,34 +756,41 @@ class Category implements GradebookItem
         $weightsum = 0;
 
         if (!empty($cats)) {
+            /** @var Category $cat */
             foreach ($cats as $cat) {
-                $catres = $cat->calc_score($stud_id, $course_code, $session_id); // recursive call
+                $catres = $cat->calc_score($stud_id, $course_code, $session_id);
                 if ($cat->get_weight() != 0) {
                     $catweight = $cat->get_weight();
                     $rescount++;
                     $weightsum += $catweight;
                 }
                 if (isset($catres)) {
-                    $ressum += (($catres[0] / $catres[1]) * $catweight);
+                    $ressum += (($catres[0]/$catres[1]) * $catweight);
                 }
             }
         }
 
         if (!empty($evals)) {
+            /** @var Evaluation $eval */
             foreach ($evals as $eval) {
                 $evalres = $eval->calc_score($stud_id);
+
                 if (isset($evalres) && $eval->get_weight() != 0) {
                     $evalweight = $eval->get_weight();
-                    $rescount++;
                     $weightsum += $evalweight;
-                    $ressum += (($evalres[0] / $evalres[1]) * $evalweight);
+                    $rescount++;
+                    $ressum += (($evalres[0]/$evalres[1]) * $evalweight);
                 } else {
-
+                    if ($eval->get_weight() != 0) {
+                        $evalweight = $eval->get_weight();
+                        $weightsum += $evalweight;
+                    }
                 }
             }
         }
 
         if (!empty($links)) {
+            /** @var EvalLink $link */
             foreach ($links as $link) {
                 $linkres = $link->calc_score($stud_id);
 
@@ -814,7 +844,6 @@ class Category implements GradebookItem
         $this->delete();
     }
 
-
     /**
      * Return array of Category objects where a student is subscribed to.
      * @param int       student id
@@ -823,13 +852,12 @@ class Category implements GradebookItem
      */
     public function get_root_categories_for_student($stud_id, $course_code = null, $session_id = null)
     {
-        // courses
-
         $main_course_user_table = Database :: get_main_table(TABLE_MAIN_COURSE_USER);
-        $course_table           = Database :: get_main_table(TABLE_MAIN_COURSE);
         $tbl_grade_categories   = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
 
-        $sql = 'SELECT * FROM '.$tbl_grade_categories.' WHERE parent_id = 0';
+        $sql = 'SELECT *'
+                .' FROM '.$tbl_grade_categories
+                .' WHERE parent_id = 0';
         if (!api_is_allowed_to_edit()) {
             $sql .= ' AND visible = 1';
             //proceed with checks on optional parameters course & session
@@ -842,18 +870,15 @@ class Category implements GradebookItem
                     $sql .= " AND course_code  = '".Database::escape_string($course_code)."'"
                         ." AND session_id = ".(int)$session_id;
                 } else {
-                    $sql .= " AND course_code  = '".Database::escape_string(
-                            $course_code
-                        )."' AND session_id is null OR session_id=0";
+                    $sql .= " AND course_code  = '".Database::escape_string($course_code)."' AND session_id is null OR session_id=0";
                 }
             } else {
                 //no optional parameter, proceed as usual
-                $sql .= ' AND course_code IN
-                         (
-                            SELECT course.code
-                            FROM '.$main_course_user_table.' course_user
-                            INNER JOIN '.$course_table.' course ON (course.id AND course_user.c_id)
-                            WHERE user_id = '.intval($stud_id).' AND status = '.STUDENT
+                $sql .= ' AND course_code in'
+                    .' (SELECT course_code'
+                    .' FROM '.$main_course_user_table
+                    .' WHERE user_id = '.intval($stud_id)
+                    .' AND status = '.STUDENT
                     .')';
             }
         } elseif (api_is_allowed_to_edit() && !api_is_platform_admin()) {
@@ -871,7 +896,8 @@ class Category implements GradebookItem
                 }
             } else {
                 $sql .= ' AND course_code in'
-                    .' (SELECT course_code FROM '.$main_course_user_table
+                        .' (SELECT course_code'
+                        .' FROM '.$main_course_user_table
                     .' WHERE user_id = '.api_get_user_id()
                     .' AND status = '.COURSEMANAGER
                     .')';
@@ -892,7 +918,6 @@ class Category implements GradebookItem
         }
 
         return $cats;
-
     }
 
     /**
@@ -907,24 +932,22 @@ class Category implements GradebookItem
             return Category::load(null, null, $course_code, 0, null, $session_id);
         }
 
-        // Courses
         $main_course_user_table = Database :: get_main_table(TABLE_MAIN_COURSE_USER);
         $tbl_grade_categories   = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
-        $course_table           = Database :: get_main_table(TABLE_MAIN_COURSE);
 
-        $sql = 'SELECT * FROM '.$tbl_grade_categories.' WHERE parent_id = 0';
+        $sql = 'SELECT *'
+                .' FROM '.$tbl_grade_categories
+                .' WHERE parent_id = 0';
         if (!empty($course_code)) {
             $sql .= " AND course_code = '".Database::escape_string($course_code)."' ";
             if (!empty($session_id)) {
                 $sql .= " AND session_id = ".(int)$session_id;
             }
         } else {
-            $sql .= ' AND course_code IN
-                         (
-                            SELECT course.code
-                            FROM '.$main_course_user_table.' course_user
-                            INNER JOIN '.$course_table.' course ON (course.id AND course_user.c_id)
-                            WHERE user_id = '.intval($stud_id).' AND status = '.STUDENT
+            $sql .= ' AND course_code in'
+                .' (SELECT course_code'
+                .' FROM '.$main_course_user_table
+                .' WHERE user_id = '.intval($user_id)
                 .')';
         }
         $result = Database::query($sql);
@@ -937,7 +960,6 @@ class Category implements GradebookItem
 
         return $cats;
     }
-
 
     /**
      * Can this category be moved to somewhere else ?
@@ -959,12 +981,11 @@ class Category implements GradebookItem
         // the root or a course -> not movable
         if (!$this->is_movable()) {
             return null;
-        } // otherwise:
+        } else {
         // - course independent category
         //   -> movable to root or other independent categories
         // - category inside a course
         //   -> movable to root, independent categories or categories inside the course
-        else {
             $user    = (api_is_platform_admin() ? null : api_get_user_id());
             $targets = array();
             $level   = 0;
@@ -1061,9 +1082,7 @@ class Category implements GradebookItem
         foreach ($links as $link) {
             $link->delete();
         }
-
     }
-
 
     /**
      * Generate an array of all categories the user can navigate to
@@ -1072,14 +1091,12 @@ class Category implements GradebookItem
     {
         $targets = array();
         $level   = 0;
-
         $root      = array(0, get_lang('RootCat'), $level);
         $targets[] = $root;
 
         // course or platform admin
         if (api_is_allowed_to_edit()) {
             $user = (api_is_platform_admin() ? null : api_get_user_id());
-
             $cats = Category::get_root_categories_for_teacher($user);
             foreach ($cats as $cat) {
                 $targets[] = array($cat->get_id(), $cat->get_name(), $level + 1);
@@ -1142,7 +1159,6 @@ class Category implements GradebookItem
         }
 
         return $cats;
-
     }
 
     /**
@@ -1153,7 +1169,6 @@ class Category implements GradebookItem
     {
         $tbl_main_courses     = Database :: get_main_table(TABLE_MAIN_COURSE);
         $tbl_main_course_user = Database :: get_main_table(TABLE_MAIN_COURSE_USER);
-        $tbl_grade_categories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
 
         $sql = 'SELECT DISTINCT(code), title FROM '.$tbl_main_courses.' cc, '.$tbl_main_course_user.' cu'
             .' WHERE cc.id = cu.c_id'
@@ -1200,7 +1215,6 @@ class Category implements GradebookItem
         }
     }
 
-
     /**
      * Check if a category contains evaluations with a result for a given student
      */
@@ -1221,7 +1235,6 @@ class Category implements GradebookItem
                 if ($cat->has_evaluations_with_results_for_student($stud_id)) {
                     return true;
                 }
-
             }
 
             return false;
@@ -1273,25 +1286,28 @@ class Category implements GradebookItem
      * @param int $stud_id student id (default: all students)
      * @param string   Course code (optional)
      * @param int      Session ID (optional)
+     *
      * @return  array   Array of subcategories
      */
     public function get_subcategories($stud_id = null, $course_code = null, $session_id = null, $order = null)
     {
+        if (!empty($session_id)) {
+             /*$tbl_grade_categories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
+             $sql = 'SELECT id FROM '.$tbl_grade_categories. ' WHERE session_id = '.$session_id;
+             $result_session = Database::query($sql);
+             if (Database::num_rows($result_session) > 0) {
+                 $data_session = Database::fetch_array($result_session);
+                 $parent_id = $data_session['id'];
+                 return Category::load(null, null, null, $parent_id, null, null, $order);
+             }*/
+         }
         // 1 student
         if (isset($stud_id)) {
             // special case: this is the root
             if ($this->id == 0) {
                 return Category::get_root_categories_for_student($stud_id, $course_code, $session_id);
             } else {
-                return Category::load(
-                    null,
-                    null,
-                    $course_code,
-                    $this->id,
-                    api_is_allowed_to_edit() ? null : 1,
-                    $session_id,
-                    $order
-                );
+                return Category::load(null,null, $course_code, $this->id, api_is_allowed_to_edit() ? null : 1, $session_id, $order);
             }
         } else { // all students
             // course admin
@@ -1322,6 +1338,9 @@ class Category implements GradebookItem
      * Get appropriate evaluations visible for the user
      * @param int $stud_id student id (default: all students)
      * @param boolean $recursive process subcategories (default: no recursion)
+     * @param string $course_code
+     *
+     * @return array
      */
     public function get_evaluations($stud_id = null, $recursive = false, $course_code = '')
     {
@@ -1370,15 +1389,18 @@ class Category implements GradebookItem
         }
 
         return $evals;
-
     }
 
     /**
      * Get appropriate links visible for the user
      * @param int $stud_id student id (default: all students)
      * @param boolean $recursive process subcategories (default: no recursion)
+     * @param string $course_code
+     * @param int $sessionId
+     *
+     * @return array
      */
-    public function get_links($stud_id = null, $recursive = false, $course_code = '')
+    public function get_links($stud_id = null, $recursive = false, $course_code = '', $sessionId = null)
     {
         $links = array();
 
@@ -1386,9 +1408,12 @@ class Category implements GradebookItem
             $course_code = api_get_course_id();
         }
 
+        if (empty($sessionId)) {
+            $sessionId = api_get_session_id();
+        }
+
         // no links in root or course independent categories
         if ($this->id == 0) {
-
         } elseif (isset($stud_id)) {
             // 1 student $stud_id
             $links = LinkFactory::load(
@@ -1413,39 +1438,68 @@ class Category implements GradebookItem
             );
         }
 
-
         if ($recursive) {
-            $subcats = $this->get_subcategories($stud_id, $course_code);
+            $subcats = $this->get_subcategories(
+                $stud_id,
+                $course_code,
+                $sessionId
+            );
             if (!empty($subcats)) {
                 foreach ($subcats as $subcat) {
-                    $sublinks = $subcat->get_links($stud_id, false, $course_code);
-                    $links    = array_merge($links, $sublinks);
+                    $sublinks = $subcat->get_links($stud_id, false, $course_code, $sessionId);
+                    $links = array_merge($links, $sublinks);
                 }
             }
         }
 
         return $links;
-
     }
 
+    /**
+     * Get all the categories from with the same given direct parent
+     * @param int $catId Category parent ID
+     * @return array Array of Category objects
+     */
+    public function getCategories($catId)
+    {
+        $tblGradeCategories = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
+        $courseInfo = api_get_course_info(api_get_course_id());
+        $courseCode = $courseInfo['code'];
+        $sql='SELECT * FROM '.$tblGradeCategories.' WHERE parent_id = '.intval($catId);
 
-// Other methods implementing GradebookItem
+        $result = Database::query($sql);
+        $allcats = Category::create_category_objects_from_sql_result($result);
+        return $allcats;
+    }
 
+    /**
+     * Gets the type for the current object
+     * @return string 'C' to represent "Category" object type
+     */
     public function get_item_type()
     {
         return 'C';
     }
 
+    /**
+     * @param array $skills
+     */
     public function set_skills($skills)
     {
         $this->skills = $skills;
     }
 
+    /**
+     * @return null
+     */
     public function get_date()
     {
         return null;
     }
 
+    /**
+     * @return string
+     */
     public function get_icon_name()
     {
         return 'cat';
@@ -1471,17 +1525,21 @@ class Category implements GradebookItem
     /**
      * This function, locks a category , only one who can unlock it is the platform administrator.
      * @param int locked 1 or unlocked 0
+
      * @return bool
      *
      * */
-    function lock($locked)
+    public function lock($locked)
     {
         $table = Database::get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY);
         $sql   = "UPDATE $table SET locked = '".intval($locked)."' WHERE id='".intval($this->id)."'";
         Database::query($sql);
     }
 
-    function lock_all_items($locked)
+    /**
+     * @param $locked
+     */
+    public function lock_all_items($locked)
     {
         if (api_get_setting('gradebook_locking_enabled') == 'true') {
             $this->lock($locked);
@@ -1505,21 +1563,24 @@ class Category implements GradebookItem
             if ($locked == 1) {
                 $event_type = LOG_GRADEBOOK_LOCKED;
             }
-            event_system($event_type, LOG_GRADEBOOK_ID, $this->id);
+            Event::addEvent($event_type, LOG_GRADEBOOK_ID, $this->id);
         }
     }
 
-    static function register_user_certificate($category_id, $user_id)
+    /**
+     * @param int $category_id
+     * @param int $user_id
+     * @return bool|string
+     */
+    public static function register_user_certificate($category_id, $user_id)
     {
         // generating the total score for a course
-        $cats_course = Category :: load($category_id, null, null, null, null, null, false);
+        $cats_course = Category::load($category_id, null, null, null, null, api_get_session_id(), false);
 
         $alleval_course = $cats_course[0]->get_evaluations($user_id, true);
         $alllink_course = $cats_course[0]->get_links($user_id, true);
 
         $evals_links = array_merge($alleval_course, $alllink_course);
-
-        $item_total = 0;
 
         //@todo move these in a function
         $sum_categories_weight_array = array();
@@ -1537,61 +1598,59 @@ class Category implements GradebookItem
         $main_weight = $cats_course[0]->get_weight();
 
         $item_total_value = 0;
-        $item_value       = 0;
+        $item_value = 0;
 
-        for ($count = 0; $count < count($evals_links); $count++) {
-            $item               = $evals_links[$count];
-            $score              = $item->calc_score($user_id);
-            $divide             = (($score[1]) == 0) ? 1 : $score[1];
-            $sub_cat_percentage = $sum_categories_weight_array[$item->get_category_id()];
-            $item_value         = $score[0] / $divide * $item->get_weight() * $sub_cat_percentage / $main_weight;
+        for ($count=0; $count < count($evals_links); $count++) {
+            $item = $evals_links[$count];
+            $score = $item->calc_score($user_id);
+            $divide = ( ($score[1])==0 ) ? 1 : $score[1];
+            $item_value = $score[0]/$divide*$item->get_weight();
+            /*var_dump($score[0], $divide, $item->get_weight(), $item_value);
+            echo '---';-*/
             $item_total_value += $item_value;
         }
+
         $item_total_value = (float)$item_total_value;
 
-        $cattotal = Category :: load($category_id);
-
+        $cattotal = Category::load($category_id);
         $scoretotal = $cattotal[0]->calc_score($user_id);
 
         //Do not remove this the gradebook/lib/fe/gradebooktable.class.php file load this variable as a global
-        $scoredisplay = ScoreDisplay :: instance();
-
+        $scoredisplay = ScoreDisplay::instance();
         $my_score_in_gradebook = $scoredisplay->display_score($scoretotal, SCORE_SIMPLE);
 
         //Show certificate
         $certificate_min_score = $cats_course[0]->get_certificate_min_score();
 
-        $scoretotal_display = $scoredisplay->display_score(
-            $scoretotal,
-            SCORE_DIV_PERCENT
-        ); //a student always sees only the teacher's repartition
+        // A student always sees only the teacher's repartition
+        $scoretotal_display = $scoredisplay->display_score($scoretotal, SCORE_DIV_PERCENT);
 
         if (isset($certificate_min_score) && $item_total_value >= $certificate_min_score) {
             $my_certificate = get_certificate_by_user_id($cats_course[0]->get_id(), $user_id);
             if (empty($my_certificate)) {
-                register_user_info_about_certificate(
-                    $category_id,
-                    $user_id,
-                    $my_score_in_gradebook,
-                    api_get_utc_datetime()
-                );
+                register_user_info_about_certificate($category_id, $user_id, $my_score_in_gradebook, api_get_utc_datetime());
                 $my_certificate = get_certificate_by_user_id($cats_course[0]->get_id(), $user_id);
             }
-
             if (!empty($my_certificate)) {
                 $certificate_obj = new Certificate($my_certificate['id']);
-
-                $url          = Certificate::getCertificatePublicURL($my_certificate['id']);
-                $certificates = Display::url(
-                    Display::return_icon('certificate.png', get_lang('Certificates'), array(), 32),
-                    $url,
-                    array('target' => '_blank')
-                );
-                $html         = '<div class="actions" align="right">';
-                $html .= Display::url($url, $url, array('target' => '_blank'));
-                $html .= $certificates;
-                $html .= '</div>';
-
+                $fileWasGenerated = $certificate_obj->html_file_is_generated();
+                $html = null;
+                if (!empty($fileWasGenerated)) {
+                    $url = api_get_path(WEB_PATH) . 'certificates/index.php?id=' . $my_certificate['id'];
+                    $certificates = Display::url(
+                        Display::return_icon(
+                            'certificate.png',
+                            get_lang('Certificates'),
+                            array(),
+                            32
+                        ),
+                        $url,
+                        array('target' => '_blank')
+                    );
+                    $html = '<div class="actions" align="right">';
+                    $html .= $certificates;
+                    $html .= '</div>';
+                }
                 return $html;
             }
         } else {
