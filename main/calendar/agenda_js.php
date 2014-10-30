@@ -4,7 +4,7 @@
  * @package chamilo.calendar
  */
 
-use \ChamiloSession as Session;
+use Chamilo\CoreBundle\Framework\Container;
 
 // use anonymous mode when accessing this course tool
 $use_anonymous = true;
@@ -60,7 +60,7 @@ if (!empty($group_id)) {
 }
 
 $app['title'] = get_lang('Agenda');
-$tpl = Session::getTwig();
+$tpl = Container::getTwig();
 $tpl->addGlobal('use_google_calendar', 0);
 
 $can_add_events = 0;
@@ -155,7 +155,7 @@ if ($type == 'course' && !empty($group_id)) {
     $type_label = get_lang('GroupCalendar');
 }
 
-$defaultView = api_get_setting('default_calendar_view');
+$defaultView = api_get_setting('agenda.default_calendar_view');
 
 if (empty($defaultView)) {
     $defaultView = 'month';
@@ -215,5 +215,5 @@ if (!empty($userId)) {
 }
 $tpl->addGlobal('form_add', $form->return_form());
 
-echo $tpl->render('ChamiloLMSCoreBundle:Calendar:month.html.twig');
+echo $tpl->render('ChamiloCoreBundle:Calendar:month.html.twig');
 

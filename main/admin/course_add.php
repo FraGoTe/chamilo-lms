@@ -5,10 +5,9 @@
  *	@package chamilo.admin
  */
 
-/* INITIALIZATION SECTION */
-
-// Language files that need to be included.
-$language_file = array('admin', 'create_course');
+use Chamilo\CoreBundle\Framework\Container;
+use Chamilo\CoreBundle\Entity\Course;
+use Chamilo\CoreBundle\Form\CourseType;
 
 $cidReset = true;
 $this_section = SECTION_PLATFORM_ADMIN;
@@ -23,22 +22,13 @@ $interbreadcrumb[] = array('url' => 'course_list.php', 'name' => get_lang('Cours
 
 global $_configuration;
 
-// Get all possible teachers.
-$order_clause = api_sort_by_first_name() ? ' ORDER BY firstname, lastname' : ' ORDER BY lastname, firstname';
-$table_user = Database :: get_main_table(TABLE_MAIN_USER);
-$sql = "SELECT user_id,lastname,firstname FROM $table_user WHERE status=1".$order_clause;
-// Filtering teachers when creating a course.
-if (api_is_multiple_url_enabled()) {
-    $access_url_rel_user_table= Database :: get_main_table(TABLE_MAIN_ACCESS_URL_REL_USER);
-    $sql = "SELECT u.user_id,lastname,firstname FROM $table_user as u
-            INNER JOIN $access_url_rel_user_table url_rel_user
-            ON (u.user_id=url_rel_user.user_id) WHERE url_rel_user.access_url_id=".api_get_current_access_url_id()." AND status=1".$order_clause;
-}
+$group = Container::getGroupManager()->findGroupByName('teachers');
 
-$res = Database::query($sql);
 $teachers = array();
-while ($obj = Database::fetch_object($res)) {
-    $teachers[$obj->user_id] = api_get_person_name($obj->firstname, $obj->lastname);
+$users = $group->getUsers();
+/** @var Chamilo\UserBundle\Entity\User $user */
+foreach ($users as $user) {
+    $teachers[$user->getId()] = $user->getCompleteName();
 }
 
 // Build the form.
@@ -60,11 +50,19 @@ $form->addRule('visual_code', get_lang('Max'), 'maxlength', CourseManager::MAX_C
 $form->addElement('select', 'course_teachers', get_lang('CourseTeachers'), $teachers, ' id="course_teachers" class="chzn-select"  style="width:350px" multiple="multiple" ');
 $form->applyFilter('course_teachers', 'html_filter');
 
-$categories_select = $form->addElement('select', 'category_code', get_lang('CourseFaculty'), array(), array('style' => 'width:350px', 'class'=>'chzn-select', 'id'=>'category_code'));
-$categories_select->addOption('-','');
-$form->applyFilter('category_code', 'html_filter');
 //This function fills the category_code select ...
-CourseManager::select_and_sort_categories($categories_select);
+$url = api_get_path(WEB_AJAX_PATH).'course.ajax.php?a=search_category';
+
+$form->addElement(
+    'select_ajax',
+    'category_code',
+    get_lang('CourseFaculty'),
+    null,
+    array(
+        'url' => $url
+    //    'formatResult' => 'function(item) { return item.name + "'" +item.code; }'
+    )
+);
 
 // Course department
 $form->add_textfield('department_name', get_lang('CourseDepartment'), false, array ('size' => '60'));
@@ -109,32 +107,35 @@ $form->add_progress_bar();
 $form->addElement('style_submit_button', 'submit', get_lang('CreateCourse'), 'class="add"');
 
 // Set some default values.
-$values['course_language']  = api_get_setting('platformLanguage');
-$values['disk_quota']       = round(api_get_setting('default_document_quotum')/1024/1024, 1);
+$values['course_language']  = Container::getTranslator()->getLocale();
 
-$default_course_visibility = api_get_setting('courses_default_creation_visibility');
+//    api_get_setting('platformLanguage');
+$values['disk_quota']       = round(api_get_setting('document.default_document_quotum')/1024/1024, 1);
+
+$default_course_visibility = api_get_setting('course.courses_default_creation_visibility');
 
 if (isset($default_course_visibility)) {
-    $values['visibility']       = api_get_setting('courses_default_creation_visibility');
+    $values['visibility'] = api_get_setting('course.courses_default_creation_visibility');
 } else {
-    $values['visibility']       = COURSE_VISIBILITY_OPEN_PLATFORM;
+    $values['visibility'] = COURSE_VISIBILITY_OPEN_PLATFORM;
 }
-$values['subscribe']        = 1;
-$values['unsubscribe']      = 0;
+
+$values['subscribe'] = 1;
+$values['unsubscribe'] = 0;
 
 $form->setDefaults($values);
-
+/*
 // Validate the form
 if ($form->validate()) {
     $course          = $form->exportValues();
-    $teacher_id      = $course['tutor_id'];
-    $course_teachers = $course['course_teachers'];
+    //$teacher_id      = $course['tutor_id'];
+    $course_teachers = isset($course['course_teachers']) ? $course['course_teachers'] : array();
 
     $course['disk_quota'] = $course['disk_quota']*1024*1024;
 
     $course['exemplary_content']    = empty($course['exemplary_content']) ? false : true;
     $course['teachers']             = $course_teachers;
-    $course['user_id']              = $teacher_id;
+    //$course['user_id']              = $teacher_id;
     $course['wanted_code']          = $course['visual_code'];
     $course['gradebook_model_id']   = isset($course['gradebook_model_id']) ? $course['gradebook_model_id'] : null;
     // Fixing category code
@@ -143,9 +144,42 @@ if ($form->validate()) {
 
     header('Location: course_list.php'.($course_info===false?'?action=show_msg&warn='.api_get_last_failure():''));
     exit;
-}
+}*/
 
 // Display the form.
 $content = $form->return_form();
 
-echo $content;
+//echo $content;
+
+$em = Container::getEntityManager();
+$request = Container::getRequest();
+
+$course = new Course();
+$builder = Container::getFormFactory()->createBuilder(
+    new CourseType(),
+    $course
+);
+
+$form = $builder->getForm();
+$form->handleRequest($request);
+
+if ($form->isValid()) {
+    $course = $form->getData();
+    $em->persist($course);
+    $em->flush();
+    Container::addFlash(get_lang('Updated'));
+    $url = Container::getRouter()->generate(
+        'main',
+        array('name' => 'admin/course_list.php')
+    );
+    header('Location: '.$url);
+    exit;
+}
+
+echo Container::getTemplate()->render(
+    'ChamiloCoreBundle:Legacy:form.html.twig',
+    array(
+        'form' => $form->createView(),
+        'url' => api_get_self()
+    )
+);

@@ -13,7 +13,7 @@
 $language_file = array ('exercice', 'admin', 'course_info', 'coursebackup');
 
 // Including the global initialization file
-require_once '../inc/global.inc.php';
+////require_once '../inc/global.inc.php';
 $current_course_tool  = TOOL_COURSE_MAINTENANCE;
 api_protect_course_script(true);
 
@@ -79,9 +79,9 @@ if ((isset($_POST['action']) &&
 	} else {
 		Display::display_warning_message(get_lang('RecycleWarning'), false);
         $form = new FormValidator('recycle_course', 'post', api_get_self().'?'.api_get_cidreq());
-		$form->addElement('header', get_lang('SelectOptionForBackup'));		
+		$form->addElement('header', get_lang('SelectOptionForBackup'));
 		$form->addElement('radio', 'recycle_option', null, get_lang('FullRecycle'), 'full_backup');
-        $form->addElement('radio', 'recycle_option', null, get_lang('LetMeSelectItems'), 'select_items');        
+        $form->addElement('radio', 'recycle_option', null, get_lang('LetMeSelectItems'), 'select_items');
         $form->addElement('style_submit_button', 'submit', get_lang('RecycleCourse'), 'class="save"');
         $form->setDefaults(array('recycle_option' => 'select_items'));
         $form->display();

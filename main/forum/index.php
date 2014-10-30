@@ -31,10 +31,8 @@ $language_file = array('forum', 'link');
 
 
 // Including the global initialization file.
-require_once '../inc/global.inc.php';
+//require_once '../inc/global.inc.php';
 $current_course_tool  = TOOL_FORUM;
-$htmlHeadXtra[] = '<script>
-
 $htmlHeadXtra[] = '<script>
     $(document).ready(function(){ $(\'.hide-me\').slideUp() });
     function hidecontent(content){ $(content).slideToggle(\'normal\'); }
@@ -121,7 +119,7 @@ $whatsnew_post_info = Session::read('whatsnew_post_info');
 
 /* TRACKING */
 
-event_access_tool(TOOL_FORUM);
+Event::event_access_tool(TOOL_FORUM);
 
 /*
     RETRIEVING ALL THE FORUM CATEGORIES AND FORUMS

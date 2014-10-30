@@ -9,7 +9,7 @@
  */
 
 $language_file = array('chat');
-require_once '../inc/global.inc.php';
+//require_once '../inc/global.inc.php';
 $current_course_tool  = TOOL_CHAT;
 
 require_once api_get_path(LIBRARY_PATH).'groupmanager.lib.php';
@@ -30,7 +30,7 @@ if ($origin != 'whoisonline') {
 
 /*  TRACKING */
 
-event_access_tool(TOOL_CHAT);
+Event::event_access_tool(TOOL_CHAT);
 header('Content-Type: text/html; charset='.api_get_system_encoding());
 
 /*
@@ -52,7 +52,7 @@ $cidreq = Security::remove_XSS($_GET['cidReq']);
 <meta charset="<?php echo api_get_system_encoding(); ?>" />
 <link rel="stylesheet" type="text/css" href="<?php echo api_get_path(WEB_CSS_PATH); ?>chat.css">
 <?php
-echo'<title>'.get_lang('Chat').' - '.$mycourseid.' - '.api_get_setting('siteName').'</title>';
+echo'<title>'.get_lang('Chat').' - '.$mycourseid.' - '.api_get_setting('platform.site_name').'</title>';
 
 $groupId = api_get_group_id();
 

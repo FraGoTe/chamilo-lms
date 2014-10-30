@@ -1,31 +1,46 @@
 Chamilo LMS
 =============
 
-A next generation Learning Management system focused on ease of use, collaboration and sharing.
+What is Chamilo LMS?
+--------------------
+
+An advanced Learning Management system focused on ease of use and speed.
 See documentation/index.html for a complete overview of Chamilo.
 
 Versions differentiation
 ------------------------
 
-Beware that the Chamilo Association hosts *two completely different applications*: Chamilo LMS (this software here) and Chamilo LCMS (a more experimental application focused on sharing learning objects, mostly, hosted on Bitbucket, not here).
+Beware that the Chamilo Association supports *two completely different applications*: Chamilo LMS (this software here) and Chamilo LCMS (a more experimental application focused on sharing learning objects, mostly, hosted on Bitbucket, not here).
 https://campus.chamilo.org, https://stable.chamilo.org and the vast majority of Chamilo installations around the world (98%) use Chamilo LMS.
 
 Inside this Chamilo LMS project itself, there are two main "branches":
-* Chamilo LMS 1.9.x offers a stable version of Chamilo that is made more stable with each new version
-* Chamilo LMS HEAD (the default if you download it from Github) is in active development and will soon spawn the new 1.10 version (or v10) of Chamilo LMS. It is NOT to be used in production right now.
+* Chamilo LMS 1.9.x is a stable version of Chamilo that is made more stable with each new version
+* Chamilo LMS HEAD (the default if you download it from Github) is in active development and will soon spawn the new v10 version of Chamilo LMS. It is a general effort to reuse base components from other sources instead of maintaining near-deprecated packages). It should NOT to be used in production at this point.
 
-If you are in search of the latest patches to your production installation, you should choose 1.9.x. If you are adventurous and look forward to contribute to something that *mostly* works but is still under heavy development, you should stick with the default HEAD branch.
+If you are in search of the latest patches to your production installation, you should choose 1.9.x. If you are an adventurous developer and look forward to contribute to something that *mostly* works but is still under heavy development, you might try with the default HEAD branch.
 
-Chamilo LMS v10 should be out around January 2014, so not too far away, and comes with an improved files structure and a lot of new dependencies/packages coming from Symfony and Composer. If you have time on your hands and are looking for long term contributions, that's where we'd like you to help.
+Chamilo LMS v10 should be available in beta version around early 2015, so not too far away, and comes with an improved files structure and a lot of new dependencies/packages coming from Symfony and Composer. If you have time on your hands and are looking for long term contributions, that's where we'd like you to help.
 
-Installation
+Requirements
 ------------
 
-You need a working web server + PHP + MySQL setup.
+Chamilo LMS supports PHP 5.4 and up, but we recommend PHP 5.5 (and up) with the
+Zend Optimizer+ (opcache module) enabled for greater efficiency.
+
+Chamilo requires MariaDB or MySQL v5.1 or higher.
+
+Chamilo has been reported to work under Linux, Windows and Mac OSes.
+
+Chamilo 1.9 has been reported to work with Apache 2 and Nginx. IIS installations
+have been reported to work too, but testing has been insufficient to guarantee 
+stability.
+
+Installing Chamilo v1.9.x
+-------------------------
 
 To install from Git (which means installing an unstable, development version of this application), do the following:
 
-* Create a directory where you will store the Chamilo LMS files (beware, the Git repo is about 600MB in size now)
+* Create a directory where you will store the Chamilo LMS files (beware, the Git repo is about 1GB in size now)
 * Install git (if that's not already the case)
 * Clone the Chamilo LMS repo from Github:
 ```
@@ -45,6 +60,37 @@ This way, you'll stick to the 1.9.x branch only in this directory (your installa
 
 Finally, if you are really looking into contributing back to Chamilo, you should (really) create yourself a Github account and "fork this project". You would then download Chamilo from your own Github repository first, then send changes to your repository and finally (once you're sure they're matching our coding conventions), submit a "Pull request" to Chamilo. This is the cleanest, more time-saving way to do it!
 
+Installing Chamilo v10
+----------------------
+
+This version is *not* stable. It is not even alpha yet. Only for developers and
+testing.
+
+Command-line install:
+```
+git clone https://github.com/chamilo/chamilo-lms.git chamilo
+cd chamilo
+composer update
+php app/console chamilo:install --force --drop-database
+```
+
+Browser install:
+```
+git clone https://github.com/chamilo/chamilo-lms.git chamilo
+cd chamilo
+composer update
+```
+
+Load localhost/chamilo/install.php in your browser and follow the instructions.
+
+Documentation
+-------------
+
+A teachers guide is available in English and Spanish from [our website][1]
+An admin guide is available in English from [our support website][2]
+A developers guide for 1.9.x currently being written in English is available from [our "docs" repository][3]
+
+
 Reporting bugs
 --------------
 
@@ -55,7 +101,11 @@ Always make sure you look for the Chamilo LMS subproject when submittingbug repo
 Contributing
 ------------
 
-When contributing patches (which we always welcome, as long as you agree to do that under the GNU/GPLv3 license), please ensure you respect our coding conventions: https://support.chamilo.org/projects/1/wiki/Coding_conventions (mostly PSR-2 with a few additional rules and hints).
+When contributing patches (which we always welcome, as long as you agree to do that under the GNU/GPLv3 license), please ensure you respect our [coding conventions][4] (mostly PSR-2 with a few additional rules and hints).
+
+Before you contribute, you should consider carefully the branch to which you want to contribute. The "master" branch (the default) is the continuously experimental branch of Chamilo, so by nature it is unstable and it is *not* used in production. The "1.9.x" branch (or the highest number ending with an ".x") is the currently stable branch. New releases are *tags* that are set on the stable branch when a new version is released. So, if you are looking to contribute on a bug of 1.9.8 in prevision for 1.9.9, you should use branch 1.9.x.
+
+We gladly welcome Pull Requests on GitHub, so if you feel like you have 30 minutes and can contribute a patch, fork our repo, create a branch and send a PR (probably against branch 1.9.x). We will review it before the next release. Although we are generally fast enough at reviewing PRs, sometimes we might be more busy than others, so please be patient with us. Ultimately, we *will* review your PR and include it if it's useful and it follows our coding conventions (see link above).
 
 Manual testing
 --------------
@@ -64,6 +114,13 @@ You can always check the impact of your changes and confirm with other users on 
 * https://stable.chamilo.org for versions 1.9.x
 * https://unstable.chamilo.org for development version (currently 1.10) - this one doesn't automatically apply database changes, so it is more likely to break often
 These are *NOT* production portals. Your content *WILL* be deleted once every now and then. It is completely public and anyone can enter and delete your content if they want to. DO NOT put important content there.
+
+Automated testing
+-----------------
+
+We have a few automated tests written in SimpleTest but, after a series of unsuccessful attempts at developing the right set of tests covering 100% of the code, we decided to give up and rewrite an important part of Chamilo's legacy code. This is what v10, our current master branch, is about (between other things).
+
+You can find the existing tests in the tests/ directory in any clone generated from GitHub (you won't find it in the downloadable archive on our website, though).
 
 Learn more
 ----------
@@ -85,5 +142,10 @@ Chamilo is licensed under the GPLv3 license.
 
 Misc
 ----
+
+[1]: http://www.chamilo.org/en/documentation
+[2]: https://support.chamilo.org/issues/5653
+[3]: https://github.com/chamilo/docs/tree/master/1.9/en/developer
+[4]: https://support.chamilo.org/projects/1/wiki/Coding_conventions
 
 [![Build Status](https://api.travis-ci.org/chamilo/chamilo-lms.png)](https://travis-ci.org/chamilo/chamilo-lms)

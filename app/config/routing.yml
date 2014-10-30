@@ -1,13 +1,16 @@
-chamilo_lms_course:
-    resource: "@ChamiloLMSCourseBundle/Resources/config/routing.yml"
+chamilo_course:
+    resource: "@ChamiloCourseBundle/Resources/config/routing.yml"
     prefix:   /
+
+_courses:
+    resource: routing_courses.yml
 
 _front:
     resource: routing_front.yml
 
 _admin:
     resource: routing_admin.yml
-    prefix:   /admin
+    prefix:   /administration
 
 _api:
     resource: routing_api.yml
@@ -25,7 +28,6 @@ fos_comment_api:
 
 avanzu_admin_profile:
     path: /profile
-
 avanzu_admin_all_messages:
     path: /messages/
 avanzu_admin_show_message:
@@ -41,6 +43,10 @@ avanzu_admin_show_task:
 avanzu_admin_logout:
     path: /logout
 
+liip_theme:
+    resource: "@LiipThemeBundle/Resources/config/routing.xml"
+    prefix: /theme
+
 home:
     path: /
 
@@ -48,8 +54,12 @@ logout:
     path: /logout
 
 login_check:
-    path: /login_check
+    path: /administration/login_check
+
+chamilo_installer:
+    resource: "@ChamiloInstallerBundle/Resources/config/routing.yml"
 
 # Always at the end
 core_bundle:
-    resource: "@ChamiloLMSCoreBundle/Resources/config/routing.yml"
+    resource: "@ChamiloCoreBundle/Resources/config/routing.yml"
+

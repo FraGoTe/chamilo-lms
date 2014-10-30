@@ -28,7 +28,7 @@ monolog:
         #    level:  info
 
 assetic:
-    use_controller: true
+    use_controller: false
 
 #swiftmailer:
 #    delivery_address: me@example.com
@@ -47,3 +47,7 @@ web_profiler_extra:
     twig:
         enabled:        true
         display_in_wdt: true
+
+jns_xhprof:
+    location_web: http://localhost/xhprof/xhprof_html
+    enabled: false

@@ -11,7 +11,7 @@ $language_file='admin';
 // resetting the course id
 $cidReset = true;
 
-require_once '../inc/global.inc.php';
+//require_once '../inc/global.inc.php';
 
 $id_session = isset($_GET['id_session']) ? intval($_GET['id_session']) : null;
 
@@ -248,9 +248,13 @@ unset($nosessionCourses);
   <?php
   } else {
   ?>
-  	<button class="arrowr" type="button" onclick="moveItem(document.getElementById('origin'), document.getElementById('destination'))" onclick="moveItem(document.getElementById('origin'), document.getElementById('destination'))"></button>
+  	<button class="btn arrowr" type="button" onclick="moveItem(document.getElementById('origin'), document.getElementById('destination'))" onclick="moveItem(document.getElementById('origin'), document.getElementById('destination'))">
+        <i class="fa fa-arrow-right"></i>
+  	</button>
 	<br /><br />
-	<button class="arrowl" type="button" onclick="moveItem(document.getElementById('destination'), document.getElementById('origin'))" onclick="moveItem(document.getElementById('destination'), document.getElementById('origin'))"></button>
+	<button class="btn arrowl" type="button" onclick="moveItem(document.getElementById('destination'), document.getElementById('origin'))" onclick="moveItem(document.getElementById('destination'), document.getElementById('origin'))">
+        <i class="fa fa-arrow-left"></i>
+	</button>
   <?php
   }
   ?>

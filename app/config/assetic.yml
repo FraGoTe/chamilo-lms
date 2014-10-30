@@ -1,9 +1,9 @@
 assetic:
-    debug:          false # %kernel.debug%
+    debug:          true # %kernel.debug%
     use_controller: false
     read_from:      %kernel.root_dir%/../web
     write_to:       %kernel.root_dir%/../web
-    bundles:        [] # disable bundles parsing
+    bundles:        [ChamiloCoreBundle, ChamiloInstallerBundle] # disable bundles parsing
 
     filters:
         cssrewrite: ~
@@ -11,6 +11,7 @@ assetic:
         yui_css: { jar: "%kernel.root_dir%/../bin/yuicompressor.jar" }
 
     assets:
+
         # see http://sonata-project.org/blog/2012/5/15/assetic-package-configuration
         #
         sonata_jqueryui_js:
@@ -125,10 +126,10 @@ assetic:
             inputs:
                 - %kernel.root_dir%/../web/bundles/sonataadmin/vendor/jquery/dist/jquery.js
                 - %kernel.root_dir%/../web/bundles/sonataadmin/vendor/bootstrap/dist/js/bootstrap.js
-                - %kernel.root_dir%/../web/bundles/sonataproduct/js/product.js
+#                - %kernel.root_dir%/../web/bundles/sonataproduct/js/product.js
                 - %kernel.root_dir%/../web/bundles/sonatacore/js/base.js
                 - %kernel.root_dir%/../web/bundles/sonatacore/select2/select2.min.js
-                - %kernel.root_dir%/../web/bundles/sonatademo/js/demo.js
+#                - %kernel.root_dir%/../web/bundles/sonatademo/js/demo.js
 
             filters:
                 - yui_js

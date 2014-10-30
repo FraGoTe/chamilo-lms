@@ -14,16 +14,20 @@ sonata_page:
     use_streamed_response: false # set the value to false in debug mode or if the reverse proxy does not handle streamed response
 
     ignore_uri_patterns:
-        - ^/admin(.*)
+        - ^/administration(.*) # sonata admin
         - ^/api/(.*)
+        - ^installer
+        - ^/installer/(.*)
+        - install.php
 
     ignore_route_patterns:
-        - (.*)admin(.*)     # ignore admin route, ie route containing 'admin'
+        - (.*)administration(.*)     # ignore admin route, ie route containing 'admin'  # sonata admin
         - ^_(.*)            # ignore symfony routes
         - login
         - home
         - homepage
-        - (.*)fos_user_(.*)
+        - _settings
+        - avanzu_admin_(.*)
 
     ignore_routes:
         - sonata_page_cache_esi
@@ -35,6 +39,10 @@ sonata_page:
         - sonata_cache_js_async
         - sonata_cache_js_sync
         - sonata_cache_apc
+        - chamilo_installer_flow
+        - sylius_flow_start
+        - sylius_flow_display
+        - sylius_flow_forward
 
     cache_invalidation:
         service:  sonata.page.cache.invalidation.simple
@@ -53,7 +61,7 @@ sonata_page:
     templates:
         default:
             #path: 'ApplicationSonataPageBundle::demo_layout.html.twig'
-            path: 'ChamiloLMSCoreBundle::main_layout.html.twig'
+            path: '::layout.html.twig'
             name: 'default'
             containers:
                  header:
@@ -83,7 +91,7 @@ sonata_page:
 
         2columns:
             #path: 'ApplicationSonataPageBundle::default_2columns_layout.html.twig'
-            path: 'ChamiloLMSCoreBundle::main_layout.html.twig'
+            path: '::layout.html.twig'
             name: '2 columns layout'
             containers:
                  header:

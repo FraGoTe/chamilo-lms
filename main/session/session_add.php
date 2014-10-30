@@ -1,22 +1,13 @@
 <?php
 /* For licensing terms, see /license.txt */
 
-/**
-*	@package chamilo.admin
-* 	@todo use formvalidator for the form, remove all the select harcoded values
-*/
-
-// name of the language file that needs to be included
-$language_file = 'admin';
+use Chamilo\CoreBundle\Framework\Container;
+use Chamilo\CoreBundle\Entity\Session;
+use Chamilo\CoreBundle\Form\SessionType;
 
 $cidReset = true;
 
-// including the global Chamilo file
-require_once '../inc/global.inc.php';
-
 // setting the section (for the tabs)
-$this_section = SECTION_PLATFORM_ADMIN;
-
 SessionManager::protect_session_edit();
 
 $interbreadcrumb[] = array('url' => 'index.php',       'name' => get_lang('Sessions'));
@@ -26,10 +17,10 @@ $htmlHeadXtra[] = api_get_jquery_libraries_js(array('jquery-ui-i18n'));
 $htmlHeadXtra = api_get_datetime_picker_js($htmlHeadXtra);
 
 $id = null;
-$url_action = api_get_self();
+$urlAction = api_get_self();
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    $url_action = '?id='.$id;
+    $urlAction = '?id='.$id;
 }
 
 $add_coach = null;
@@ -176,7 +167,7 @@ $(function() {
 });
 </script>';
 
-$form = new FormValidator('add_session', 'post', $url_action);
+$form = new FormValidator('add_session', 'post');
 $form->addElement('header', $tool_name);
 
 //Name
@@ -287,4 +278,38 @@ echo '<a href="'.api_get_path(WEB_CODE_PATH).'session/session_list.php">'.
      '</a>';
 echo '</div>';
 
-$form->display();
+//$form->display();
+$em = Container::getEntityManager();
+$request = Container::getRequest();
+
+$session = new Session();
+if (!empty($id)) {
+    $session = $em->getRepository('ChamiloCoreBundle:Session')->find($id);
+}
+
+$builder = Container::getFormFactory()->createBuilder(
+    new SessionType(),
+    $session
+);
+
+$form = $builder->getForm();
+$form->handleRequest($request);
+
+if ($form->isValid()) {
+    $em->flush();
+    Container::addFlash(get_lang('Updated'));
+    $url = Container::getRouter()->generate(
+        'main',
+        array('name' => 'session/session_list.php')
+    );
+    header('Location: '.$url);
+    exit;
+}
+
+echo Container::getTemplate()->render(
+    'ChamiloCoreBundle:Legacy:form.html.twig',
+    array(
+        'form' => $form->createView(),
+        'url' => $urlAction
+    )
+);

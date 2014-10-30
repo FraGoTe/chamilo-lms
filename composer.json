@@ -1,5 +1,6 @@
 {
     "name": "chamilo/chamilo-lms",
+    "description": "E-learning and collaboration software",
     "type": "project",
     "homepage": "http://www.chamilo.org",
     "license": "GPL-3.0",
@@ -7,10 +8,10 @@
         "forum": "http://www.chamilo.org/forum",
         "irc": "irc://irc.freenode.org/chamilo"
     },
-
     "autoload": {
         "psr-0": {
-            "": "src/"
+            "": "src/",
+            "Oro\\Bundle": "src/"
         },
         "classmap": [
             "main/auth",
@@ -26,8 +27,6 @@
             "main/survey"
         ]
     },
-
-    "minimum-stability": "stable",
     "repositories": [
         {
             "type": "package",
@@ -42,11 +41,24 @@
         },
         {
             "type": "vcs",
-            "url": "https://github.com/jmontoyaa/AdminThemeBundle"
+            "url": "https://github.com/jmontoyaa/MigrationBundle.git"
         }
     ],
 
+    "minimum-stability": "stable",
+
     "require": {
+        "php": ">=5.3.3",
+
+        "ext-intl": "*",
+        "ext-gd": "*",
+        "ext-mysql": "*",
+        "ext-curl": "*",
+        "ext-zlib": "*",
+        "ext-xml": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+
         "twig/twig": "~1.12",
         "twig/extensions": "~1.0",
 
@@ -56,15 +68,16 @@
         "symfony/monolog-bundle": "~2.3",
 
         "sensio/distribution-bundle": "~2.3",
-        "sensio/framework-extra-bundle": "~3.0.0",
+        "sensio/framework-extra-bundle": "~3.0",
         "sensio/generator-bundle": "~2.3",
 
         "jms/security-extra-bundle": "~1.5",
         "jms/di-extra-bundle": "~1.4",
-        "jms/serializer-bundle": "~0.11",
+        "jms/serializer-bundle": "~0.12",
 
-        "doctrine/orm": "~2.4",
-        "doctrine/doctrine-bundle": "~1.2",
+        "doctrine/orm": "2.5.*@dev",
+        "doctrine/doctrine-bundle": "1.3.*@dev",
+        "doctrine/dbal": "2.5.*@dev",
         "doctrine/doctrine-migrations-bundle": "~2.0@dev",
         "doctrine/migrations": "~1.0@dev",
         "doctrine/doctrine-fixtures-bundle": "~2.2",
@@ -73,8 +86,7 @@
         "symfony-cmf/routing-bundle": "~1.1",
 
         "knplabs/gaufrette": "0.1.4",
-        "knplabs/knp-paginator-bundle": "dev-master",
-        "knplabs/knp-menu-bundle": "dev-master as 1.1",
+        "knplabs/knp-menu-bundle": "~2.0",
 
         "sonata-project/easy-extends-bundle": "~2.1@dev",
         "sonata-project/seo-bundle": "~1@dev",
@@ -122,24 +134,32 @@
         "oyejorge/less.php": "~1.5",
 
         "hwi/oauth-bundle": "0.4.*@dev",
-        "stof/doctrine-extensions-bundle": "~1.1@dev",
         "gedmo/doctrine-extensions": "~2.3",
 
-
-
+        "zendframework/zend-filter": "2.3.*@dev",
 
         "jbroadway/urlify": "1.0.0-stable",
-        "composer/composer": "1.0.*@dev",
-        "liip/theme-bundle": "1.0.*@dev",
+        "composer/composer": "1.0.0-alpha8",
+        "liip/theme-bundle": "dev-master",
         "chamilo/chash" : "dev-master",
-        "white-october/pagerfanta-bundle": "dev-master"
-
+        "white-october/pagerfanta-bundle": "dev-master",
+        "sylius/resource-bundle": "dev-master",
+        "sylius/resource": "dev-master",
+        "apy/datagrid-bundle": "dev-master",
+        "jms/translation-bundle": "dev-master",
+        "sylius/flow-bundle": "0.11.*@dev",
+        "sylius/settings-bundle": "dev-master",
+        "sp/bower-bundle": "dev-master",
+        "jmontoyaa/migration-bundle":"dev-master",
+        "thrace/datagrid-bundle":"dev-master"
     },
     "require-dev": {
+        "akeneo/crowdin-api": "1.0.*@dev",
         "elao/web-profiler-extra-bundle" : "~2.3@dev",
-        "lexik/maintenance-bundle": "dev-master"
+        "lexik/maintenance-bundle": "dev-master",
+        "jns/xhprof-bundle": "1.0.*@dev",
+        "facebook/xhprof": "dev-master@dev"
     },
-
     "scripts": {
         "post-install-cmd": [
             "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
@@ -158,11 +178,9 @@
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile"
         ]
     },
-
     "config": {
         "bin-dir": "bin"
     },
-
     "extra": {
         "symfony-app-dir": "app",
         "symfony-web-dir": "web",
@@ -170,7 +188,7 @@
             "file": "app/config/parameters.yml"
         },
         "branch-alias": {
-            "dev-master": "2.4-dev"
+            "dev-master": "10.0.x-dev"
         }
     }
 }
