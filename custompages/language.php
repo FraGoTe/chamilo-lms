@@ -51,7 +51,18 @@ if (isset($_REQUEST['language']) && !empty($_REQUEST['language']) && in_array($_
 if (isset($_REQUEST['lang']) && !empty($_REQUEST['lang']) && in_array($_REQUEST['lang'], $available_langs)) {
 	$lang_match = $chamilo_langs[$_REQUEST['lang']];
 }
-$_user['language'] = $lang_match;
 
-$_SESSION['user_language_choice'] = $lang_match;
+global $_configuration;
+if (isset($_configuration['auto_detect_language_custom_pages']) &&
+    $_configuration['auto_detect_language_custom_pages'] == true
+) {
+    // Auto detect
+    $_user['language'] = $lang_match;
+    $_SESSION['user_language_choice'] = $lang_match;
+} else {
+    // Chamilo default platform.
+    $defaultLanguage = api_get_interface_language();
+    $_user['language'] = $defaultLanguage;
+    $_SESSION['user_language_choice'] = $defaultLanguage;
+}
 

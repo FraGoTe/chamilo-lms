@@ -10,9 +10,7 @@
 *   @author Julio Montoya adding support to query all questions from all session, courses, exercises
 *   @author Modify by hubert borderiou 2011-10-21 Question's category
 */
-/**
- * Code
- */
+
 // name of the language file that needs to be included
 
 use \ChamiloSession as Session;
@@ -50,10 +48,7 @@ if (!isset($_GET['selected_course']) && !isset($_GET['exerciseId'])) {
 	$selected_course = api_get_course_int_id();
 }
 
-// document path
-$documentPath = api_get_path(SYS_COURSE_PATH).$_course['path'].'/document';
-// picture path
-$picturePath = $documentPath.'/images';
+$_course = api_get_course_info();
 
 if (empty($objExercise) && !empty($fromExercise)) {
     $objExercise = new Exercise();
@@ -67,114 +62,118 @@ if (!empty($objExercise)) {
     $interbreadcrumb[] = array("url" => "admin.php?exerciseId=".$objExercise->id, "name" => $objExercise->name);
 }
 
-// message to be displayed if actions succesful
+// message to be displayed if actions successful
 $displayMessage = "";
 if ($is_allowedToEdit) {
-	//Duplicating a Question
-	if (!isset($_POST['recup']) && $copy_question != 0 && isset($fromExercise)) {
+    // Duplicating a Question
+    if (!isset($_POST['recup']) && $copy_question != 0 && isset($fromExercise)) {
         $origin_course_id   = intval($_GET['course_id']);
         $origin_course_info = api_get_course_info_by_id($origin_course_id);
         $current_course     = api_get_course_info();
         $old_question_id    = $copy_question;
-        //Reading the source question
-		$old_question_obj = Question::read($old_question_id, $origin_course_id);
+        // Reading the source question
+        $old_question_obj = Question::read($old_question_id, $origin_course_id);
 
-		if ($old_question_obj) {
-			$old_question_obj->updateTitle($old_question_obj->selectTitle().' - '.get_lang('Copy'));
+        $courseId = $current_course['real_id'];
+
+        if ($old_question_obj) {
+            $old_question_obj->updateTitle(
+                $old_question_obj->selectTitle() . ' - ' . get_lang('Copy')
+            );
             //Duplicating the source question, in the current course
-			$new_id = $old_question_obj->duplicate($current_course);
+            $new_id = $old_question_obj->duplicate($current_course);
             //Reading new question
-			$new_question_obj = Question::read($new_id);
-			$new_question_obj->addToList($fromExercise);
+            $new_question_obj = Question::read($new_id);
+            $new_question_obj->addToList($fromExercise);
             //Reading Answers obj of the current course
-			$new_answer_obj = new Answer($old_question_id, $origin_course_id);
-			$new_answer_obj->read();
+            $new_answer_obj = new Answer($old_question_id, $origin_course_id);
+            $new_answer_obj->read();
             //Duplicating the Answers in the current course
-			$new_answer_obj->duplicate($new_id, $current_course);
-			// destruction of the Question object
-			unset($new_question_obj);
-			unset($old_question_obj);
-            if (!$objExercise instanceOf Exercise) {
-                $objExercise = new Exercise();
-                $objExercise->read($fromExercise);
-            }
-			Session::write('objExercise', $objExercise);
-		}
-		$displayMessage = get_lang('ItemAdded');
-	}
+            $new_answer_obj->duplicate($new_id, $current_course);
+            // destruction of the Question object
+            unset($new_question_obj);
+            unset($old_question_obj);
 
-	// deletes a question from the database and all exercises
-	if ($delete) {
-		// Construction of the Question object
+            $objExercise = new Exercise($courseId);
+            $objExercise->read($fromExercise);
+            Session::write('objExercise', $objExercise);
+        }
+        $displayMessage = get_lang('ItemAdded');
+    }
+
+    // Deletes a question from the database and all exercises
+    if ($delete) {
+        // Construction of the Question object
         $objQuestionTmp = Question::read($delete);
         // if the question exists
-		if ($objQuestionTmp) {
-			// deletes the question from all exercises
-			$objQuestionTmp->delete();
-		}
-		// destruction of the Question object
-		unset($objQuestionTmp);
-	} elseif($recup && $fromExercise) {
-		// gets an existing question and copies it into a new exercise
-		$objQuestionTmp = Question :: read($recup);
-		// if the question exists
-		if ($objQuestionTmp) {
-			// adds the exercise ID represented by $fromExercise into the list of exercises for the current question
-			$objQuestionTmp->addToList($fromExercise);
-		}
-		// destruction of the Question object
-		unset($objQuestionTmp);
+        if ($objQuestionTmp) {
+            // deletes the question from all exercises
+            $objQuestionTmp->delete();
+        }
+        // destruction of the Question object
+        unset($objQuestionTmp);
+    } elseif($recup && $fromExercise) {
+        // gets an existing question and copies it into a new exercise
+        $objQuestionTmp = Question :: read($recup);
+        // if the question exists
+        if ($objQuestionTmp) {
+            /* Adds the exercise ID represented by $fromExercise into the list
+            of exercises for the current question */
+            $objQuestionTmp->addToList($fromExercise);
+        }
+        // destruction of the Question object
+        unset($objQuestionTmp);
 
         if (!$objExercise instanceOf Exercise) {
-        	$objExercise = new Exercise();
+            $objExercise = new Exercise();
             $objExercise->read($fromExercise);
         }
-		// adds the question ID represented by $recup into the list of questions for the current exercise
-		$objExercise->addToList($recup);
-		Session::write('objExercise', $objExercise);
-//		header("Location: admin.php?".api_get_cidreq()."&exerciseId=$fromExercise");
-//		exit();
-	} else if( isset($_POST['recup']) && is_array($_POST['recup']) && $fromExercise) {
-		$list_recup = $_POST['recup'];
+        // Adds the question ID represented by $recup into the list of questions for the current exercise
+        $objExercise->addToList($recup);
+        Session::write('objExercise', $objExercise);
+    } else if (isset($_POST['recup']) && is_array($_POST['recup']) && $fromExercise) {
+        $list_recup = $_POST['recup'];
 
-		foreach ($list_recup as $course_id => $question_data) {
-			$origin_course_id   = intval($course_id);
-			$origin_course_info = api_get_course_info_by_id($origin_course_id);
-			$current_course     = api_get_course_info();
+        foreach ($list_recup as $course_id => $question_data) {
+            $origin_course_id   = intval($course_id);
+            $origin_course_info = api_get_course_info_by_id($origin_course_id);
+            $current_course     = api_get_course_info();
 
-			foreach ($question_data as $old_question_id) {
-				//Reading the source question
-				$old_question_obj = Question::read($old_question_id, $origin_course_id);
-				if ($old_question_obj) {
-					$old_question_obj->updateTitle($old_question_obj->selectTitle().' - '.get_lang('Copy'));
+            foreach ($question_data as $old_question_id) {
+                //Reading the source question
+                $old_question_obj = Question::read($old_question_id, $origin_course_id);
+                if ($old_question_obj) {
+                    $old_question_obj->updateTitle(
+                        $old_question_obj->selectTitle() . ' - ' . get_lang('Copy')
+                    );
 
-					//Duplicating the source question, in the current course
-					$new_id = $old_question_obj->duplicate($current_course);
+                    //Duplicating the source question, in the current course
+                    $new_id = $old_question_obj->duplicate($current_course);
 
-					//Reading new question
-					$new_question_obj = Question::read($new_id);
-					$new_question_obj->addToList($fromExercise);
+                    //Reading new question
+                    $new_question_obj = Question::read($new_id);
+                    $new_question_obj->addToList($fromExercise);
 
-					//Reading Answers obj of the current course
-					$new_answer_obj = new Answer($old_question_id, $origin_course_id);
-					$new_answer_obj->read();
+                    //Reading Answers obj of the current course
+                    $new_answer_obj = new Answer($old_question_id, $origin_course_id);
+                    $new_answer_obj->read();
 
-					//Duplicating the Answers in the current course
-					$new_answer_obj->duplicate($new_id, $current_course);
+                    //Duplicating the Answers in the current course
+                    $new_answer_obj->duplicate($new_id, $current_course);
 
-					// destruction of the Question object
-					unset($new_question_obj);
-					unset($old_question_obj);
+                    // destruction of the Question object
+                    unset($new_question_obj);
+                    unset($old_question_obj);
 
-					if (!$objExercise instanceOf Exercise) {
-						$objExercise = new Exercise();
-						$objExercise->read($fromExercise);
-					}
-				}
-			}
-		}
-		Session::write('objExercise',$objExercise);
-	}
+                    if (!$objExercise instanceOf Exercise) {
+                        $objExercise = new Exercise();
+                        $objExercise->read($fromExercise);
+                    }
+                }
+            }
+        }
+        Session::write('objExercise',$objExercise);
+    }
 }
 
 if (isset($_SESSION['gradebook'])){
@@ -190,7 +189,7 @@ if (!$is_allowedToEdit) {
     api_not_allowed(true);
 }
 
-$confirmYourChoice = addslashes(api_htmlentities(get_lang('ConfirmYourChoice'),ENT_QUOTES,$charset));
+$confirmYourChoice = addslashes(api_htmlentities(get_lang('ConfirmYourChoice'), ENT_QUOTES, $charset));
 
 $htmlHeadXtra[] = "
 <script>
@@ -211,23 +210,25 @@ $htmlHeadXtra[] = "
 	}
 </script>";
 
-Display::display_header($nameTools,'Exercise');
+Display::display_header($nameTools, 'Exercise');
 
 // Menu
 echo '<div class="actions">';
-	if (isset($type)) {
-		$url = api_get_self().'?type=1';
-	} else {
-		$url = api_get_self();
-	}
-	if (isset($fromExercise) && $fromExercise > 0) {
-		echo '<a href="admin.php?'.api_get_cidreq().'&exerciseId='.$fromExercise.'">'.Display::return_icon('back.png', get_lang('GoBackToQuestionList'),'',ICON_SIZE_MEDIUM).'</a>';
-		$titleAdd = get_lang('AddQuestionToTest');
-    } else {
-		echo '<a href="exercice.php?'.api_get_cidReq().'">'.Display::return_icon('back.png', get_lang('BackToExercisesList'),'',ICON_SIZE_MEDIUM).'</a>';
-		echo "<a href='admin.php?exerciseId=0'>".Display::return_icon('add_question.gif', get_lang('NewQu'), '', 32)."</a>";
-		$titleAdd = get_lang('ManageAllQuestions');
-	}
+if (isset($type)) {
+    $url = api_get_self().'?type=1';
+} else {
+    $url = api_get_self();
+}
+if (isset($fromExercise) && $fromExercise > 0) {
+    echo '<a href="admin.php?'.api_get_cidreq().'&exerciseId='.$fromExercise.'">'.
+            Display::return_icon('back.png', get_lang('GoBackToQuestionList'),'',ICON_SIZE_MEDIUM).'</a>';
+    $titleAdd = get_lang('AddQuestionToTest');
+} else {
+    echo '<a href="exercice.php?'.api_get_cidReq().'">'.
+        Display::return_icon('back.png', get_lang('BackToExercisesList'),'',ICON_SIZE_MEDIUM).'</a>';
+    echo "<a href='admin.php?exerciseId=0'>".Display::return_icon('add_question.gif', get_lang('NewQu'), '', ICON_SIZE_MEDIUM)."</a>";
+    $titleAdd = get_lang('ManageAllQuestions');
+}
 echo '</div>';
 
 if ($displayMessage != "") {
@@ -235,9 +236,9 @@ if ($displayMessage != "") {
 	$displayMessage = "";
 }
 
-//Form
+// Form
 echo '<form class="form-horizontal" name="question_pool" method="GET" action="'.$url.'">';
-//Title
+// Title
 echo '<legend>'.$nameTools.' - '.$titleAdd.'</legend>';
 if (isset($type)) {
 	echo '<input type="hidden" name="type" value="1">';
@@ -245,29 +246,54 @@ if (isset($type)) {
 echo '<input type="hidden" name="fromExercise" value="'.$fromExercise.'">';
 
 // Session list, if sessions are used.
-$session_list = SessionManager::get_sessions_by_general_coach(api_get_user_id());
-$tabAttrParam = array('class'=>'chzn-select', 'onchange'=>'submit_form(this)');	// when sessions are used
+$sessionList = SessionManager::get_sessions_by_user(api_get_user_id(), api_is_platform_admin());
+
+$tabAttrParam = array('class'=>'chzn-select', 'onchange'=>'submit_form(this)');
 $labelFormRow = get_lang('Session');
 $session_select_list = array();
-foreach($session_list as $item) {
-	$session_select_list[$item['id']] = $item['name'];
+foreach ($sessionList as $item) {
+    $session_select_list[$item['session_id']] = $item['session_name'];
 }
 $select_session_html =  Display::select('session_id', $session_select_list, $session_id, $tabAttrParam);
 echo Display::form_row($labelFormRow, $select_session_html);
 
 // Course list, get course list of session, or for course where user is admin
-if (!empty($session_id) && $session_id != '-1') {
-	$course_list = SessionManager::get_course_list_by_session_id($session_id);
+if (!empty($session_id) && $session_id != '-1' && !empty($sessionList)) {
+    $sessionInfo = array();
+    foreach ($sessionList as $session) {
+        if ($session['session_id'] == $session_id) {
+            $sessionInfo = $session;
+        }
+    }
+    $course_list = $sessionInfo['courses'];
 } else {
-	$course_list = CourseManager::get_course_list_of_user_as_course_admin(api_get_user_id());
+    $course_list = CourseManager::get_course_list_of_user_as_course_admin(
+        api_get_user_id()
+    );
+
+    // Admin fix, add the current course in the question pool.
+    if (api_is_platform_admin()) {
+        $courseInfo = api_get_course_info();
+        if (!empty($course_list)) {
+            $courseIdList = array_keys($course_list);
+            if (!in_array($courseInfo['real_id'], $courseIdList)) {
+                $course_list = array_merge($course_list, array($courseInfo));
+            }
+        } else {
+            $course_list = array($courseInfo);
+        }
+    }
 }
+
 $course_select_list = array();
 foreach ($course_list as $item) {
-	$course_select_list[$item['id']] = "";
-	if ($item['id'] == api_get_course_int_id()) {
-		$course_select_list[$item['id']] = ">&nbsp;&nbsp;&nbsp;&nbsp;";
+    $courseItemId = $item['real_id'];
+    $courseInfo = api_get_course_info_by_id($courseItemId);
+	$course_select_list[$courseItemId] = "";
+	if ($courseItemId == api_get_course_int_id()) {
+		$course_select_list[$courseItemId] = ">&nbsp;&nbsp;&nbsp;&nbsp;";
 	}
-	$course_select_list[$item['id']] .= $item['title'];
+	$course_select_list[$courseItemId] .= $courseInfo['title'];
 }
 
 $select_course_html =  Display::select(
@@ -276,21 +302,23 @@ $select_course_html =  Display::select(
     $selected_course,
     array('class'=>'chzn-select','onchange'=>'mark_course_id_changed(); submit_form(this);')
 );
+
 echo Display::form_row(get_lang('Course'), $select_course_html);
 
 if (empty($selected_course) || $selected_course == '-1') {
     $course_info = api_get_course_info();
-    reset_menu_exo_lvl_type();    // no course selected, reset menu test / difficult� / type de reponse
-}
-else {
+    // no course selected, reset menu test / difficult� / type de reponse
+    reset_menu_exo_lvl_type();
+} else {
 	$course_info = CourseManager::get_course_information_by_id($selected_course);
 }
 // If course has changed, reset the menu default
 if ($course_id_changed) {
 	reset_menu_exo_lvl_type();
 }
+
 $course_id = $course_info['real_id'];
-//Redefining table calls
+// Redefining table calls
 $TBL_EXERCICE_QUESTION      = Database::get_course_table(TABLE_QUIZ_TEST_QUESTION);
 $TBL_EXERCICES              = Database::get_course_table(TABLE_QUIZ_TEST);
 $TBL_QUESTIONS              = Database::get_course_table(TABLE_QUIZ_QUESTION);
@@ -313,7 +341,12 @@ echo Display::form_row(get_lang("QuestionCategory"), $selectCourseCategory);
 
 // Get exercise list for this course
 
-$exercise_list = get_all_exercises_for_course_id($course_info, $session_id, $selected_course, false);
+$exercise_list = get_all_exercises_for_course_id(
+    $course_info,
+    $session_id,
+    $selected_course,
+    false
+);
 //Exercise List
 $my_exercise_list = array();
 $my_exercise_list['0']  = get_lang('AllExercises');
@@ -338,44 +371,59 @@ $select_exercise_html =  Display::select(
     array('class'=>'chzn-select','onchange'=>'mark_exercice_id_changed(); submit_form(this);'),
     false
 );
+
 echo Display::form_row(get_lang('Exercise'), $select_exercise_html);
 
 // Difficulty list (only from 0 to 5)
-
+$levels = array(
+    -1 => get_lang('All'),
+    0 => 0,
+    1 => 1,
+    2 => 2,
+    3 => 3,
+    4 => 4,
+    5 => 5
+);
 $select_difficulty_html = Display::select(
     'exerciseLevel',
-    array(-1 => get_lang('All'), 0=>0, 1=>1, 2=>2, 3=>3, 4=>4, 5=>5),
+    $levels,
     $exerciseLevel,
     array('class'=>'chzn-select', 'onchange'=>'submit_form(this);'),
     false
 );
 echo Display::form_row(get_lang('Difficulty'), $select_difficulty_html);
 
-
 // Answer type
-
 $question_list = Question::get_question_type_list();
 
 $new_question_list = array();
 $new_question_list['-1']  = get_lang('All');
-$objExercise = new Exercise();
-$objExercise->read($fromExercise);
-foreach ($question_list as $key=>$item) {
-    if ($objExercise->feedback_type == EXERCISE_FEEDBACK_TYPE_DIRECT) {
-        if (!in_array($key, array(HOT_SPOT_DELINEATION, UNIQUE_ANSWER))) {
-            continue;
+if (!empty($_course)) {
+    $objExercise = new Exercise();
+    $objExercise->read($fromExercise);
+    foreach ($question_list as $key => $item) {
+        if ($objExercise->feedback_type == EXERCISE_FEEDBACK_TYPE_DIRECT) {
+            if (!in_array($key, array(HOT_SPOT_DELINEATION, UNIQUE_ANSWER))) {
+                continue;
+            }
+            $new_question_list[$key] = get_lang($item[1]);
+        } else {
+            if ($key == HOT_SPOT_DELINEATION) {
+                continue;
+            }
+            $new_question_list[$key] = get_lang($item[1]);
         }
-        $new_question_list[$key] = get_lang($item[1]);
-    } else {
-        if ($key == HOT_SPOT_DELINEATION) {
-            continue;
-        }
-        $new_question_list[$key] = get_lang($item[1]);
     }
 }
+// Answer type list
+$select_answer_html = Display::select(
+    'answerType',
+    $new_question_list,
+    $answerType,
+    array('class'=>'chzn-select','onchange'=>'submit_form(this);'),
+    false
+);
 
-//Answer type list
-$select_answer_html = Display::select('answerType', $new_question_list, $answerType, array('class'=>'chzn-select','onchange'=>'submit_form(this);'), false);
 echo Display::form_row(get_lang('AnswerType'), $select_answer_html);
 $button = '<button class="save" type="submit" name="name" value="'.get_lang('Filter').'">'.get_lang('Filter').'</button>';
 echo Display::form_row('', $button);
@@ -387,8 +435,10 @@ echo "<input type='hidden' id='exercice_id_changed' name='exercice_id_changed' v
 <form method="post" action="<?php echo $url.'?'.api_get_cidreq().'&fromExercise='.$fromExercise; ?>" >
 <?php
 echo '<input type="hidden" name="course_id" value="'.$selected_course.'">';
+$mainQuestionList = array();
 
 // if we have selected an exercise in the list-box 'Filter'
+
 if ($exerciseId > 0) {
 	$where = '';
 	$from = '';
@@ -403,7 +453,8 @@ if ($exerciseId > 0) {
 		$where .= ' AND type='.$answerType;
 	}
 	$sql = "SELECT DISTINCT
-	            id,question,
+	            id,
+	            question,
 	            type,
 	            level
 	        FROM
@@ -417,17 +468,20 @@ if ($exerciseId > 0) {
 	            AND qu.c_id=$selected_course
 	            $where
             ORDER BY question_order";
-    $result=Database::query($sql);
+
+    $result = Database::query($sql);
     while($row = Database::fetch_array($result, 'ASSOC')) {
-        $main_question_list[] = $row;
+        $mainQuestionList[] = $row;
     }
 } elseif ($exerciseId == -1) {
 	// If we have selected the option 'Orphan questions' in the list-box 'Filter'
 	$level_where = '';
 	$from = '';
 	if (isset($courseCategoryId) && $courseCategoryId > 0) {
-		$from = ", $TBL_COURSE_REL_CATEGORY crc ";
-		$level_where .= " AND crc.c_id=$selected_course AND crc.question_id=qu.id AND crc.category_id=$courseCategoryId";
+		$from = " INNER JOIN  $TBL_COURSE_REL_CATEGORY crc ON crc.question_id=q.id  AND crc.c_id= q.c_id ";
+		$level_where .= " AND
+		        crc.c_id = $selected_course AND
+		        crc.category_id = $courseCategoryId";
 	}
 	if (isset($exerciseLevel) && $exerciseLevel!= -1 ) {
 		$level_where = ' AND level='.$exerciseLevel;
@@ -439,38 +493,55 @@ if ($exerciseId > 0) {
 
     // @todo fix this query with the new id field
     $sql = " (
-                SELECT q.* FROM $TBL_QUESTIONS q INNER JOIN $TBL_EXERCICE_QUESTION r
+                SELECT q.* FROM $TBL_QUESTIONS q
+                INNER JOIN $TBL_EXERCICE_QUESTION r
                 ON (q.c_id = r.c_id AND q.id = r.question_id)
                 INNER JOIN $TBL_EXERCICES ex
-                ON (ex.id = r.exercice_id AND ex.c_id = r.c_id ) $from
-                WHERE ex.c_id = '$selected_course' AND ex.active = '-1'   $level_where $answer_where
+                ON (ex.id = r.exercice_id AND ex.c_id = r.c_id )
+                $from
+                WHERE
+                    ex.c_id = '$selected_course' AND
+                    ex.active = '-1'
+                    $level_where $answer_where
              )
              UNION
              (
                 SELECT q.* FROM $TBL_QUESTIONS q
                 LEFT OUTER JOIN $TBL_EXERCICE_QUESTION r
                 ON (q.c_id = r.c_id AND q.id = r.question_id)
-                WHERE q.c_id = '$selected_course' AND r.question_id is null $level_where $answer_where
+                $from
+                WHERE
+                    q.c_id = '$selected_course' AND
+                    r.question_id is null
+                    $level_where $answer_where
              )
              UNION
              (
                 SELECT q.* FROM $TBL_QUESTIONS q
                 INNER JOIN $TBL_EXERCICE_QUESTION r
                 ON (q.c_id = r.c_id AND q.id = r.question_id)
-                WHERE r.c_id = '$selected_course' AND (r.exercice_id = '-1' OR r.exercice_id = '0') $level_where $answer_where
+                $from
+                WHERE
+                    r.c_id = '$selected_course' AND
+                    (r.exercice_id = '-1' OR r.exercice_id = '0')
+                    $level_where $answer_where
              )";
     $result = Database::query($sql);
     while($row = Database::fetch_array($result, 'ASSOC')) {
-        $main_question_list[] = $row;
+        $mainQuestionList[] = $row;
     }
 } else {
 	// All tests for selected course
     // If we have not selected any option in the list-box 'Filter'
 	$filter = '';
 	$from = '';
+
 	if (isset($courseCategoryId) && $courseCategoryId > 0) {
 		$from = ", $TBL_COURSE_REL_CATEGORY crc ";
-		$filter .= " AND crc.c_id = $selected_course AND crc.question_id = qu.id AND crc.category_id = $courseCategoryId";
+		$filter .= " AND
+		            crc.c_id = $selected_course AND
+		            crc.question_id = qu.id AND
+		            crc.category_id = $courseCategoryId";
 	}
 	if (isset($exerciseLevel) && $exerciseLevel != -1) {
 		$filter .= ' AND level='.$exerciseLevel.' ';
@@ -478,24 +549,34 @@ if ($exerciseId > 0) {
 	if (isset($answerType) && $answerType > 0) {
 		$filter .= ' AND qu.type='.$answerType.' ';
 	}
+
     if (!empty($session_id) && $session_id != '-1') {
-        $main_question_list = array();
-        if (!empty($course_list))
+        $mainQuestionList = array();
+        if (!empty($course_list)) {
             foreach ($course_list as $course_item) {
+                $courseItemId = $course_item['real_id'];
+
                 if (!empty($selected_course) && $selected_course != '-1') {
-                    if ($selected_course != $course_item['id']) {
+                    if ($selected_course != $courseItemId) {
                         continue;
                     }
                 }
-                $exercise_list = get_all_exercises($course_item, $session_id);
-                if (!empty($exercise_list)) {
-                    foreach ($exercise_list as $exercise) {
-                        $my_exercise = new Exercise($course_item['id']);
+
+                $exerciseList = get_all_exercises($course_item, $session_id);
+
+                if (!empty($exerciseList)) {
+                    foreach ($exerciseList as $exercise) {
+                        $my_exercise = new Exercise($courseItemId);
                         $my_exercise->read($exercise['id']);
                         if (!empty($my_exercise)) {
                             if (!empty($my_exercise->questionList)) {
                                 foreach ($my_exercise->questionList as $question_id) {
-                                    $question_obj = Question::read($question_id, $course_item['id']);
+
+                                    $question_obj = Question::read(
+                                        $question_id,
+                                        $courseItemId
+                                    );
+
                                     if ($exerciseLevel != '-1') {
                                         if ($exerciseLevel != $question_obj->level) {
                                             continue;
@@ -507,50 +588,73 @@ if ($exerciseId > 0) {
                                             continue;
                                         }
                                     }
-                                    if ($courseCategoryId > 0 && Testcategory::getCategoryForQuestion($question_obj->id, $selected_course)) {
+
+                                    $categoryIdFromQuestion = Testcategory::getCategoryForQuestion(
+                                        $question_obj->id,
+                                        $selected_course
+                                    );
+
+                                    if ($courseCategoryId > 0 &&
+                                        $categoryIdFromQuestion != $courseCategoryId
+                                    ) {
                                         continue;
                                     }
-                                    if ($objExercise->feedback_type != EXERCISE_FEEDBACK_TYPE_DIRECT) {
-                                        if ($question_obj->type == HOT_SPOT_DELINEATION)  {
+
+                                    if (!empty($objExercise) &&
+                                        $objExercise->feedback_type != EXERCISE_FEEDBACK_TYPE_DIRECT
+                                    ) {
+                                        if ($question_obj->type == HOT_SPOT_DELINEATION) {
                                             continue;
                                         }
                                     }
+
                                     $question_row = array(
-                                        'id'			=> $question_obj->id,
-                                        'question'		=> $question_obj->question,
-                                        'type'			=> $question_obj->type,
-                                        'level'			=> $question_obj->level,
-                                        'exercise_id'	=> $exercise['id'],
-                                        'course_id'		=> $course_item['id'],
+                                        'id' => $question_obj->id,
+                                        'question' => $question_obj->question,
+                                        'type' => $question_obj->type,
+                                        'level' => $question_obj->level,
+                                        'exercise_id' => $exercise['id'],
+                                        'exercise_name' => $exercise['title'],
+                                        'course_id' => $courseItemId,
                                     );
-                                    $main_question_list[] = $question_row;
+                                    $mainQuestionList[] = $question_row;
                                 }
                             }
                         }
                     }
                 }
             }
+        }
     } else {
+        if ($session_id == -1 or empty($session_id)) {
+            $session_id = 0;
+        }
+
         // All tests for the course selected, not in session
         $sql = "SELECT DISTINCT qu.id, question, qu.type, level, q.session_id
-                FROM $TBL_QUESTIONS as qu, $TBL_EXERCICE_QUESTION as qt, $TBL_EXERCICES as q $from
+                FROM
+                $TBL_QUESTIONS as qu,
+                $TBL_EXERCICE_QUESTION as qt,
+                $TBL_EXERCICES as q
+                $from
                 WHERE
-                  qu.c_id = $selected_course AND
+                    qu.c_id = $selected_course AND
                     qt.c_id = $selected_course AND
                     q.c_id = $selected_course AND
                     qu.id = qt.question_id AND
+                    q.session_id = $session_id AND
                     q.id = qt.exercice_id $filter
                 ORDER BY session_id ASC";
         $result = Database::query($sql);
-        while($row = Database::fetch_array($result, 'ASSOC')) {
-            $main_question_list[] = $row;
+        while ($row = Database::fetch_array($result, 'ASSOC')) {
+            $mainQuestionList[] = $row;
         }
     }
 	// forces the value to 0
-	$exerciseId=0;
+    $exerciseId = 0;
 }
 
-$nbrQuestions = count($main_question_list);
+$nbrQuestions = count($mainQuestionList);
 
 // build the line of the array to display questions
 // Actions are different if you launch the question_pool page
@@ -570,25 +674,30 @@ $nbrQuestions = count($main_question_list);
 (*) this is the only way to delete or modify orphan questions
 */
 //
-if ($fromExercise <= 0) { // NOT IN A TEST - IN THE COURSE
+if ($fromExercise <= 0) {
+    // NOT IN A TEST - IN THE COURSE
 	if ($selected_course == api_get_course_int_id()) {
 		$actionLabel = get_lang('Modify');
 		$actionIcon1 = "edit";
 		$actionIcon2 = "delete";
-		$questionTagA = 1;	// we are in the course, question title can be a link to the question edit page
+        // We are in the course, question title can be a link to the question edit page
+		$questionTagA = 1;
     } else { // NOT IN A TEST - NOT IN THE COURSE
 		$actionLabel = get_lang('Reuse');
 		$actionIcon1 = get_lang('MustBeInATest');
 		$actionIcon2 = "";
-		$questionTagA = 0;	// we are not in this course, to messy if we link to the question in another course
+        // We are not in this course, to messy if we link to the question in another course
+		$questionTagA = 0;
 	}
-} else { // IN A TEST - IN THE COURSE
+} else {
+    // IN A TEST - IN THE COURSE
 	if ($selected_course == api_get_course_int_id()) {
 		$actionLabel = get_lang('Reuse');
 		$actionIcon1 = "add";
 		$actionIcon2 = "";
 		$questionTagA = 1;
-    } else { // IN A TEST - NOT IN THE COURSE
+    } else {
+        // IN A TEST - NOT IN THE COURSE
 		$actionLabel = get_lang('Reuse');
 		$actionIcon1 = "clone";
 		$actionIcon2 = "";
@@ -596,35 +705,63 @@ if ($fromExercise <= 0) { // NOT IN A TEST - IN THE COURSE
 	}
 }
 // Display table
-$header = array();
-$header[] = array(get_lang('QuestionUpperCaseFirstLetter'), false, array("style"=>"text-align:center"), '');
-$header[] = array(get_lang('Type'), false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), '');
-$header[] = array(get_lang('QuestionCategory'), false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), '');
-$header[] = array(get_lang('Difficulty'), false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), '');
-$header[] = array($actionLabel, false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), '');
+$header = array(
+    array(get_lang('QuestionUpperCaseFirstLetter'), false, array("style"=>"text-align:center"), ''),
+    array(get_lang('Type'), false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), ''),
+    array(get_lang('QuestionCategory'), false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), ''),
+    array(get_lang('Difficulty'), false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), ''),
+    array($actionLabel, false, array("style"=>"text-align:center"), array("style"=>"text-align:center"), '')
+);
 
 $data = array();
-if (is_array($main_question_list)) {
-    foreach ($main_question_list as $tabQuestion) {
+
+/*$hideDoubles = false;
+if (empty($exerciseId) && !empty($session_id) && $session_id != '-1') {
+    $hideDoubles = true;
+}
+$questionAdded = array();*/
+
+if (is_array($mainQuestionList)) {
+    foreach ($mainQuestionList as $question) {
+
+        /*if ($hideDoubles) {
+            if (in_array($question['question'], $questionAdded)) {
+                continue;
+            }
+        }
+        $questionAdded[$question['question']] = $question;*/
+
         $row = array();
 
-        //This function checks if the question can be read
-        $question_type = get_question_type_for_question($selected_course, $tabQuestion['id']);
+        // This function checks if the question can be read
+        $question_type = get_question_type_for_question(
+            $selected_course,
+            $question['id']
+        );
 
         if (empty($question_type)) {
             continue;
         }
 
-        $row[] = get_a_tag_for_question($questionTagA, $fromExercise, $tabQuestion['id'], $tabQuestion['type'], $tabQuestion['question']);
+        $sessionId = isset($question['session_id']) ? $question['session_id'] : null;
+        $exerciseName = isset($question['exercise_name']) ? '<br />('.$question['exercise_id'].') ' : null;
+        $row[] = get_a_tag_for_question(
+            $questionTagA,
+            $fromExercise,
+            $question['id'],
+            $question['type'],
+            $question['question'],
+            $sessionId
+        ).$exerciseName;
         $row[] = $question_type;
-        $row[] = get_question_categorie_for_question($selected_course, $tabQuestion['id']);
-        $row[] = $tabQuestion['level'];
+        $row[] = get_question_categorie_for_question($selected_course, $question['id']);
+        $row[] = $question['level'];
         $row[] = get_action_icon_for_question(
                     $actionIcon1,
                     $fromExercise,
-                    $tabQuestion['id'],
-                    $tabQuestion['type'],
-                    $tabQuestion['question'],
+                    $question['id'],
+                    $question['type'],
+                    $question['question'],
                     $selected_course,
                     $courseCategoryId,
                     $exerciseLevel,
@@ -632,13 +769,13 @@ if (is_array($main_question_list)) {
                     $session_id,
                     $exerciseId
                 ).
-                    "&nbsp;".
+                "&nbsp;".
                 get_action_icon_for_question(
                     $actionIcon2,
                     $fromExercise,
-                    $tabQuestion['id'],
-                    $tabQuestion['type'],
-                    $tabQuestion['question'],
+                    $question['id'],
+                    $question['type'],
+                    $question['question'],
                     $selected_course,
                     $courseCategoryId,
                     $exerciseLevel,
@@ -649,77 +786,78 @@ if (is_array($main_question_list)) {
         $data[] = $row;
     }
 }
-Display :: display_sortable_table($header, $data, '', array('per_page_default'=>999,'per_page'=>999,'page_nr'=>1));
+
+Display :: display_sortable_table(
+    $header,
+    $data,
+    '',
+    array('per_page_default' => 999, 'per_page' => 999, 'page_nr' => 1)
+);
 
 if (!$nbrQuestions) {
 	echo get_lang('NoQuestion');
 }
 
-// The (+) system as now make this button useless
-// Hubert Borderiou 27-10-2011
-//if (api_get_session_id() == 0){
-//	echo '<div style="width:100%; border-top:1px dotted #4171B5;"><button class="save" type="submit">'.get_lang('Reuse').'</button></div></form>';
-//}
 Display::display_footer();
 
-// Some functions here, just for question_pool to ease the code
-
-/*
-	Put the menu entry for level and type to default "Choice"
-	It is useful if you change the exercise, you need to reset the other menus
-	hubert.borderiou 13-10-2011
+/**
+*	Put the menu entry for level and type to default "Choice"
+*	It is useful if you change the exercise, you need to reset the other menus
+*   @author hubert.borderiou 13-10-2011
 */
-function reset_menu_lvl_type() {
+function reset_menu_lvl_type()
+{
 	global $exerciseLevel, $answerType;
 	$answerType = -1;
 	$exerciseLevel = -1;
 }
-/*
-	Put the menu entry for exercise and level and type to default "Choice"
-	It is useful if you change the course, you need to reset the other menus
-	hubert.borderiou 13-10-2011
-*/
 
-function reset_menu_exo_lvl_type() {
+/**
+*   Put the menu entry for exercise and level and type to default "Choice"
+*	It is useful if you change the course, you need to reset the other menus
+*   @author hubert.borderiou 13-10-2011
+*/
+function reset_menu_exo_lvl_type()
+{
 	global $exerciseId, $courseCategoryId;
 	reset_menu_lvl_type();
 	$exerciseId = 0;
 	$courseCategoryId = 0;
 }
 
-// return the <a> link to admin question, if needed
-// hubert.borderiou 13-10-2011
-function get_a_tag_for_question($in_addA, $in_fromex, $in_questionid, $in_questiontype, $in_questionname)
-{
+/**
+ * return the <a> link to admin question, if needed
+ * @param int $in_addA
+ * @param int $in_fromex
+ * @param int $in_questionid
+ * @param int $in_questiontype
+ * @param string $in_questionname
+ * @param int $sessionId
+ * @return string
+ * @author hubert.borderiou
+ */
+function get_a_tag_for_question(
+    $in_addA,
+    $in_fromex,
+    $in_questionid,
+    $in_questiontype,
+    $in_questionname,
+    $sessionId
+) {
 	$res = $in_questionname;
+    $sessionIcon = null;
 	if ($in_addA) {
-		$res = "<a href='admin.php?".api_get_cidreq()."&editQuestion=$in_questionid&type=$in_questiontype&fromExercise=$in_fromex'>".$res."</a>";
+        if (!empty($sessionId) && $sessionId != -1) {
+            $sessionIcon = ' '.Display::return_icon('star.png', get_lang('Session'));
+        }
+		$res = "<a href='admin.php?".api_get_cidreq()."&editQuestion=$in_questionid&type=$in_questiontype&fromExercise=$in_fromex'>".
+            $res.$sessionIcon.
+            "</a>";
 	}
 	return $res;
 }
 
-
-/*
-$row[] = get_action_icon_for_question(
-$actionIcon1, --
-$fromExercise, --
-$tabQuestion['id'], --
-$tabQuestion['type'],
-$tabQuestion['question'],
-$selected_course,
-$courseCategoryId,
-$exerciseLevel,
-$answerType,
-$session_id,
-$exerciseId).
-
-"&nbsp;".
-get_action_icon_for_question($actionIcon2, $fromExercise, $tabQuestion['id'], $tabQuestion['type'],
-$tabQuestion['question'], $selected_course, $courseCategoryId, $exerciseLevel, $answerType,
-$session_id, $exerciseId);
-*/
-
-/*
+/**
     Return the <a> html code for delete, add, clone, edit a question
     in_action = the code of the action triggered by the button
     from_exercice = the id of the current exercice from which we click on question pool
@@ -760,7 +898,8 @@ function get_action_icon_for_question(
                 $from_exercice,
                 $in_questionid,
                 $in_questiontype,
-                Display::return_icon("edit.png", get_lang('Modify'))
+                Display::return_icon("edit.png", get_lang('Modify')),
+                $in_session_id
             );
 			break;
 		case "add":
@@ -777,14 +916,17 @@ function get_action_icon_for_question(
 			unset($myObjEx);
 			break;
 		case "clone":
-			$res = "<a href='".api_get_self()."?".api_get_cidreq().$getParams."&copy_question=$in_questionid&course_id=$in_selected_course&fromExercise=$from_exercice'>";
-			$res .= Display::return_icon('cd.gif', get_lang('ReUseACopyInCurrentTest'));
-			$res .= "</a>";
+            $url = api_get_self()."?".api_get_cidreq().$getParams."&amp;copy_question=$in_questionid&amp;course_id=$in_selected_course&amp;fromExercise=$from_exercice";
+            $res = Display::url(
+                Display::return_icon('cd.gif', get_lang('ReUseACopyInCurrentTest')),
+                $url
+            );
 			break;
 		default :
 			$res = $in_action;
 			break;
 	}
+
 	return $res;
 }
 
@@ -804,8 +946,10 @@ function get_question_type_for_question($in_selectedcourse, $in_questionid)
 	return $questionType;
 }
 
-// return the name of the category for the question in a course
-// hubert.borderiou 13-10-2011
+/**
+ * Return the name of the category for the question in a course
+ * @author hubert.borderiou 13-10-2011
+ */
 function get_question_categorie_for_question($in_courseid, $in_questionid)
 {
 	$cat = Testcategory::getCategoryNameForQuestion($in_questionid, $in_courseid);

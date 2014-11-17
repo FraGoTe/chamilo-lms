@@ -1,6 +1,7 @@
 <?php
 /* For licensing terms, see /license.txt */
 
+$language_file = array('document');
 require_once '../../../inc/global.inc.php';
 require_once api_get_path(LIBRARY_PATH).'fileUpload.lib.php';
 require_once api_get_path(LIBRARY_PATH).'document.lib.php';
@@ -8,6 +9,8 @@ require_once api_get_path(LIBRARY_PATH).'document.lib.php';
 // Add security from Chamilo
 api_protect_course_script();
 api_block_anonymous_users();
+
+$_course = api_get_course_info();
 
 # Save the audio to a URL-accessible directory for playback.
 parse_str($_SERVER['QUERY_STRING'], $params);
@@ -26,7 +29,7 @@ if ($wamiuserid != api_get_user_id() || api_get_user_id() == 0 || $wamiuserid ==
     die();
 }
 
-//clean
+// Clean
 $waminame = Security::remove_XSS($waminame);
 $waminame = Database::escape_string($waminame);
 $waminame = replace_dangerous_char($waminame, 'strict');
@@ -45,12 +48,14 @@ if ($ext != 'wav') {
     die();
 }
 
-//Do not use here check Fileinfo method because return: text/plain
+// Do not use here check Fileinfo method because return: text/plain
 
-$dirBaseDocuments   = api_get_path(SYS_COURSE_PATH).$_course['path'].'/document';
-$saveDir            = $dirBaseDocuments.$wamidir;
-$current_session_id = api_get_session_id();
-$groupId            = api_get_group_id();
+$dirBaseDocuments = api_get_path(SYS_COURSE_PATH).$_course['path'].'/document';
+$saveDir = $dirBaseDocuments . $wamidir;
+
+if (!is_dir($saveDir)) {
+    DocumentManager::createDefaultAudioFolder($_course);
+}
 
 //avoid duplicates
 $waminame_to_save = $waminame;
@@ -67,11 +72,11 @@ if (file_exists($saveDir.'/'.$waminame_noex.'.'.$ext)) {
 }
 
 $documentPath = $saveDir.'/'.$waminame_to_save;
+
 // Add to disk
 $fh = fopen($documentPath, 'w') or die("can't open file");
 fwrite($fh, $content);
 fclose($fh);
-
 
 $fileInfo = pathinfo($documentPath);
 $courseInfo = api_get_course_info();
@@ -84,13 +89,31 @@ $file = array(
         'from_file' => true
     )
 );
-
 $output = true;
-$documentData = DocumentManager::upload_document($file, $wamidir, null, null, 0, 'overwrite', false, $output);
+ob_start();
+$documentData = DocumentManager::upload_document(
+    $file,
+    $wamidir,
+    $fileInfo['basename'],
+    'wav',
+    0,
+    'overwrite',
+    false,
+    $output
+);
+$contents = ob_get_contents();
 
 if (!empty($documentData)) {
     $newDocId = $documentData['id'];
-    $newMp3DocumentId = DocumentManager::addAndConvertWavToMp3($documentData, $courseInfo, api_get_user_id());
+    $documentData['comment'] = 'mp3';
+    $newMp3DocumentId = DocumentManager::addAndConvertWavToMp3(
+        $documentData,
+        $courseInfo,
+        api_get_session_id(),
+        api_get_user_id(),
+        'overwrite',
+        true
+    );
 
     if ($newMp3DocumentId) {
         $newDocId = $newMp3DocumentId;
@@ -105,6 +128,11 @@ if (!empty($documentData)) {
             $lp->set_modified_on();
             $lpItem = new learnpathItem($lpItemId);
             $lpItem->add_audio_from_documents($newDocId);
+            Display::addFlash(
+                Display::return_message(get_lang('Updated'), 'info')
+            );
         }
     }
+} else {
+    Display::addFlash($contents);
 }

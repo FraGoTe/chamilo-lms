@@ -82,7 +82,6 @@ class CourseBuilder
         $this->course->path         = api_get_path(SYS_COURSE_PATH).$_course['path'].'/';
         $this->course->backup_path  = api_get_path(SYS_COURSE_PATH).$_course['path'];
         $this->course->encoding     = api_get_system_encoding(); //current platform encoding
-        // db_name is deprecated (only one database now)
         $this->course->db_name      = $_course['dbName'];
         $this->course->info         = $_course;
     }
@@ -783,7 +782,8 @@ class CourseBuilder
     /**
      * Build the announcements
      */
-    public function build_announcements($session_id = 0, $course_code = '', $with_base_content = false, $id_list = array()) {
+    public function build_announcements($session_id = 0, $course_code = '', $with_base_content = false, $id_list = array())
+    {
         $table = Database :: get_course_table(TABLE_ANNOUNCEMENT);
         $course_id = api_get_course_int_id();
 
@@ -976,11 +976,13 @@ class CourseBuilder
             $this->course->add_resource($lp);
         }
 
-        //save scorm directory (previously build_scorm_documents())
+        // Save scorm directory (previously build_scorm_documents())
         $i = 1;
-        if ($dir=@opendir($this->course->backup_path.'/scorm')) {
-            while($file=readdir($dir)) {
-                if(is_dir($this->course->backup_path.'/scorm/'.$file) && !in_array($file,array('.','..'))) {
+        if ($dir = @opendir($this->course->backup_path . '/scorm')) {
+            while ($file = readdir($dir)) {
+                if (is_dir($this->course->backup_path.'/scorm/'.$file) &&
+                    !in_array($file, array('.','..'))
+                ) {
                     $doc = new ScormDocument($i++, '/'.$file, $file);
                     $this->course->add_resource($doc);
                 }
@@ -1128,8 +1130,7 @@ class CourseBuilder
                     //$thematic_plan_complete_list[$item['ref']] = $item;
                 }
             }
-            //$sql = 'SELECT * FROM '.$table_thematic_plan.' WHERE c_id = '.$course_id.' AND thematic_id = '.$row['id'];
-            if (count($thematic_plan_id_list) > 0) {
+             if (count($thematic_plan_id_list) > 0) {
                 $sql = "SELECT tp.*
                         FROM $table_thematic_plan tp
                             INNER JOIN $table_thematic t ON (t.id=tp.thematic_id)

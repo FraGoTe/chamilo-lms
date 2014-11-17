@@ -551,12 +551,28 @@ switch ($action) {
         }
         break;
     case 'get_work_teacher':
-        //$columns = array('type', 'title', 'sent_date', 'expires_on', 'ends_on', 'actions');
-        $columns = array('type', 'title', 'sent_date', 'expires_on', 'amount', 'actions');
+        $columns = array(
+            'type',
+            'title',
+            'sent_date',
+            'expires_on',
+            'amount',
+            'actions'
+        );
         $result = getWorkListTeacher($start, $limit, $sidx, $sord, $whereCondition);
         break;
     case 'get_work_student':
-        $columns = array('type', 'title', 'expires_on', 'others', 'actions');
+        $columns = array('type', 'title', 'expires_on', 'others');
+        if (ALLOW_USER_COMMENTS) {
+            $columns = array(
+                'type',
+                'title',
+                'expires_on',
+                'feedback',
+                'last_upload',
+                'others'
+            );
+        }
         $result = getWorkListStudent($start, $limit, $sidx, $sord, $whereCondition);
         break;
     case 'get_work_user_list_all':
@@ -614,6 +630,10 @@ switch ($action) {
             $columns = array(
                 'firstname', 'lastname', 'username', 'group_name', 'exe_duration', 'start_date', 'exe_date', 'score', 'status', 'lp', 'actions'
             );
+            $officialCodeInList = api_get_configuration_value('show_official_code_exercise_result_list');
+            if ($officialCodeInList == true) {
+                $columns = array_merge(array('official_code'), $columns);
+            }
         }
         $result = get_exam_results_data($start, $limit, $sidx, $sord, $exercise_id, $whereCondition);
         break;
@@ -725,7 +745,15 @@ switch ($action) {
         break;
     case 'get_sessions':
         $columns = array(
-            'name', 'nbr_courses', 'nbr_users', 'category_name', 'date_start','date_end', 'coach_name', 'session_active', 'visibility'
+            'name',
+            'nbr_courses',
+            'nbr_users',
+            'category_name',
+            'date_start',
+            'date_end',
+            'coach_name',
+            'session_active',
+            'visibility'
         );
 
         // Rename Category_name

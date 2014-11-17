@@ -1,11 +1,6 @@
 <?php
 /* For licensing terms, see /license.txt */
-/**
- * @package chamilo.library
- */
-/**
- * Code
- */
+
 require_once 'pear/HTML/Table.php';
 require_once 'pear/Pager/Pager.php';
 
@@ -161,7 +156,7 @@ class SortableTable extends HTML_Table
 
         if (isset($_GET[$this->param_prefix.'direction'])) {
             $my_get_direction = $_GET[$this->param_prefix.'direction'];
-            if (!in_array($my_get_direction, array('ASC', 'DESC'))){
+            if (!in_array($my_get_direction, array('ASC', 'DESC'))) {
                 $this->direction = 'ASC';
             } else {
                 if ($my_get_direction == 'ASC') {
@@ -260,7 +255,7 @@ class SortableTable extends HTML_Table
             $form  = $this->get_page_select_form();
             $nav   = $this->get_navigation_html();
 
-            //Only show pagination info when there are items to paginate
+            // Only show pagination info when there are items to paginate
 
             if ($this->get_total_number_of_items() > $this->default_items_per_page) {
                 $html  = '<table class="data_table_pagination">';
@@ -321,7 +316,7 @@ class SortableTable extends HTML_Table
             }
 
             $html .= '</td>';
-
+            // Pagination
             if ($this->get_total_number_of_items() > $this->default_items_per_page) {
                 $html .= '<td style="text-align:right;">';
                 $html .= $nav;
@@ -341,9 +336,9 @@ class SortableTable extends HTML_Table
     }
 
     /**
-     * This function shows the content of a table in a grid.
-     * Should not be use to edit information (edit/delete rows) only.
-     * */
+    * This function shows the content of a table in a grid.
+    * Should not be use to edit information (edit/delete rows) only.
+    **/
     public function display_grid()
     {
 
@@ -384,9 +379,9 @@ class SortableTable extends HTML_Table
 
             if ($my_pager->numPages() > 1) {
                 $html .= '<div class="sub-header">';
-                        $html .= '<div class="grid_selectbox">'.$form.'</div>';
-                        $html .= '<div class="grid_title">'.$this->get_table_title().'</div>';
-                        $html .= '<div class="grid_nav">'.$nav.'</div>';
+                $html .= '<div class="grid_selectbox">'.$form.'</div>';
+                $html .= '<div class="grid_title">'.$this->get_table_title().'</div>';
+                $html .= '<div class="grid_nav">'.$nav.'</div>';
                 $html .= '</div>';
             }
 
@@ -558,7 +553,6 @@ class SortableTable extends HTML_Table
     {
         $pager          = $this->get_pager();
         $pager_links    = $pager->getLinks();
-
         $nav            = $pager_links['first'].' '.$pager_links['back'];
         $nav            .= ' '.$pager->getCurrentPageId().' / '.$pager->numPages().' ';
         $nav            .= $pager_links['next'].' '.$pager_links['last'];
@@ -797,7 +791,7 @@ class SortableTable extends HTML_Table
      * @param string $checkbox_name The name of the generated checkboxes. The
      * value of the checkbox will be the value of the first column.
      */
-    public function set_form_actions ($actions, $checkbox_name = 'id')
+    public function set_form_actions($actions, $checkbox_name = 'id')
     {
         $this->form_actions = $actions;
         $this->checkbox_name = $checkbox_name;
@@ -908,8 +902,20 @@ class SortableTableFromArray extends SortableTable
      * @param int $default_column
      * @param int $default_items_per_page
      */
-    public function __construct($table_data, $default_column = 1, $default_items_per_page = 20, $tablename = 'tablename', $get_total_number_function = null) {
-        parent :: __construct ($tablename, $get_total_number_function, null, $default_column, $default_items_per_page);
+    public function __construct(
+        $table_data,
+        $default_column = 1,
+        $default_items_per_page = 20,
+        $tablename = 'tablename',
+        $get_total_number_function = null
+    ) {
+        parent:: __construct(
+            $tablename,
+            $get_total_number_function,
+            null,
+            $default_column,
+            $default_items_per_page
+        );
         $this->table_data = $table_data;
     }
 
@@ -919,7 +925,6 @@ class SortableTableFromArray extends SortableTable
      */
     public function get_table_data($from = 1, $per_page = null, $column = null, $direction = null, $sort = true)
     {
-
         if ($sort) {
             $content = TableSort::sort_table($this->table_data, $this->column, $this->direction == 'ASC' ? SORT_ASC : SORT_DESC);
         } else {

@@ -2,13 +2,10 @@
 /* For licensing terms, see /license.txt */
 /**
  *	This file is responsible for  passing requested documents to the browser.
- *
+ *  Many functions updated and moved to lib/document.lib.php
  *	@package chamilo.document
  */
-/**
- * Code
- * Many functions updated and moved to lib/document.lib.php
- */
+
 session_cache_limiter('none');
 
 require_once '../inc/global.inc.php';
@@ -34,10 +31,10 @@ if (strpos($doc_url, '../') OR strpos($doc_url, '/..')) {
 }
 
 // Dealing with image included into survey: when users receive a link towards a
-// survey while not being authenticated on the plateform.
+// survey while not being authenticated on the platform.
 // The administrator should probably be able to disable this code through admin
 // inteface.
-$refer_script = strrchr($_SERVER["HTTP_REFERER"], '/');
+$refer_script = isset($_SERVER["HTTP_REFERER"]) ? strrchr($_SERVER["HTTP_REFERER"], '/') : null;
 
 $sys_course_path = api_get_path(SYS_COURSE_PATH).$_course['path'].'/document';
 

@@ -1,5 +1,6 @@
 <?php
 /* For licensing terms, see /license.txt */
+
 require_once 'Course.class.php';
 
 /**
@@ -556,7 +557,7 @@ class CourseSelectForm
 	 * @param array $hidden_fiels Hidden fields to add to the form.
 	 * @param boolean the document array will be serialize. This is used in the course_copy.php file
 	 */
-	 function display_form_session_export($list_course, $hidden_fields = null, $avoid_serialize=false)
+	 function display_form_session_export($list_course, $hidden_fields = null, $avoid_serialize = false)
      {
 ?>
 		<script>

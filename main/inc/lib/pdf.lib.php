@@ -1,15 +1,13 @@
 <?php
 /* See license terms in /license.txt */
-/**
-*   @package chamilo.library
-*/
-/**
- * Code
- */
+
 define('_MPDF_PATH', api_get_path(LIBRARY_PATH).'mpdf/');
 require_once _MPDF_PATH.'mpdf.php';
+
 /**
  * Class PDF
+ * @package chamilo.library
+ *
  */
 class PDF
 {
@@ -20,11 +18,15 @@ class PDF
 
     /**
      * Creates the mPDF object
-     * @param   string  format A4 A4-L see  http://mpdf1.com/manual/index.php?tid=184&searchstring=format
-     * @param   string  orientation "P" = Portrait "L" = Landscape
+     * @param string  $page_format format A4 A4-L see  http://mpdf1.com/manual/index.php?tid=184&searchstring=format
+     * @param string  $orientation orientation "P" = Portrait "L" = Landscape
+     * @param array $params
      */
-    public function __construct($page_format ='A4', $orientation = 'P', $params = array())
-    {
+    public function __construct(
+        $page_format = 'A4',
+        $orientation = 'P',
+        $params = array()
+    ) {
         /* More info @ http://mpdf1.com/manual/index.php?tid=184&searchstring=mPDF
          * mPDF ([ string $mode [, mixed $format [, float $default_font_size [, string $default_font [, float $margin_left , float $margin_right , float $margin_top , float $margin_bottom , float $margin_header , float $margin_footer [, string $orientation ]]]]]])
          */
@@ -46,16 +48,29 @@ class PDF
         $this->params['course_code'] = isset($params['course_code']) ? $params['course_code'] : api_get_course_id();
         $this->params['add_signatures'] = isset($params['add_signatures']) ? $params['add_signatures'] : false;
 
-        $this->pdf = new mPDF('UTF-8', $page_format, '', '', $params['left'], $params['right'], $params['top'], $params['bottom'], 8, 8, $orientation);
+        $this->pdf = new mPDF(
+            'UTF-8',
+            $page_format,
+            '',
+            '',
+            $params['left'],
+            $params['right'],
+            $params['top'],
+            $params['bottom'],
+            8,
+            8,
+            $orientation
+        );
     }
 
     /**
      * Export the given HTML to PDF, using a global template
-     * @param string the HTML content
+     * @param string $content the HTML content
      * @uses export/table_pdf.tpl
      */
     public function html_to_pdf_with_template($content)
     {
+        global $_configuration;
         Display :: display_no_header();
 
         //Assignments
@@ -72,6 +87,16 @@ class PDF
             }
         }
 
+        if (isset($_configuration['pdf_logo_header']) &&
+            $_configuration['pdf_logo_header']
+        ) {
+            $img = api_get_path(SYS_CODE_PATH).'css/'.api_get_visual_theme().'/images/pdf_logo_header.png';
+            if (file_exists($img)) {
+                $img = api_get_path(WEB_CODE_PATH) . 'css/' . api_get_visual_theme() . '/images/pdf_logo_header.png';
+                $organization = "<img src='$img'>";
+            }
+        }
+
         Display::$global_template->assign('organization', $organization);
 
         //Showing only the current teacher/admin instead the all teacher list name see BT#4080
@@ -83,7 +108,7 @@ class PDF
         Display::$global_template->assign('pdf_course', $this->params['course_code']);
         Display::$global_template->assign('pdf_course_info', $this->params['course_info']);
         Display::$global_template->assign('pdf_session_info', $this->params['session_info']);
-        Display::$global_template->assign('pdf_date', api_format_date(api_get_utc_datetime(), DATE_TIME_FORMAT_LONG));
+        Display::$global_template->assign('pdf_date', api_format_date(api_get_local_time(), DATE_TIME_FORMAT_LONG));
         Display::$global_template->assign('pdf_teachers', $teacher_list);
         Display::$global_template->assign('pdf_title', $this->params['pdf_title']);
         Display::$global_template->assign('add_signatures', $this->params['add_signatures']);
@@ -101,18 +126,22 @@ class PDF
     /**
      * Converts HTML files to PDF
      * @param   mixed   could be an html file path or an array with paths example:
-           /var/www/myfile.html or
-           array('/myfile.html','myotherfile.html') or even an indexed array with both 'title' and 'path' indexes
-          for each element like
+    /var/www/myfile.html or
+    array('/myfile.html','myotherfile.html') or even an indexed array with both 'title' and 'path' indexes
+    for each element like
      * array(0=>array('title'=>'Hello','path'=>'file.html'),1=>array('title'=>'Bye','path'=>'file2.html'));
      * @param   string  pdf name
      * @param   string  course code (if you are using html that are located in the document tool you must provide this)
      * @param bool Whether to print the header, footer and watermark (true) or just the content (false)
      * @return bool
      */
-    public function html_to_pdf($html_file_array, $pdf_name = '', $course_code = null, $print_title = false, $complete_style = true)
-    {
-
+    public function html_to_pdf(
+        $html_file_array,
+        $pdf_name = '',
+        $course_code = null,
+        $print_title = false,
+        $complete_style = true
+    ) {
         if ($complete_style === false) {
             error_log(__FUNCTION__.' with no style');
         }
@@ -143,13 +172,11 @@ class PDF
         $clean_search = array (
             '@<script[^>]*?>.*?</script>@si',
             '@<style[^>]*?>.*?</style>@si'
-            );
+        );
 
         // Formatting the pdf
         self::format_pdf($course_data, $complete_style);
-
         $counter = 1;
-
         foreach ($html_file_array as $file) {
 
             //Add a page break per file
@@ -172,7 +199,10 @@ class PDF
             if (empty($file) && !empty($html_title)) {
                 //this is a chapter, print title & skip the rest
                 if ($print_title) {
-                    $this->pdf->WriteHTML('<html><body><h3>'.$html_title.'</h3></body></html>'.$page_break, 2);
+                    $this->pdf->WriteHTML(
+                        '<html><body><h3>'.$html_title.'</h3></body></html>'.$page_break,
+                        2
+                    );
                 }
                 continue;
             }
@@ -184,7 +214,10 @@ class PDF
 
             //it's not a chapter but the file exists, print its title
             if ($print_title) {
-                $this->pdf->WriteHTML('<html><body><h3>'.$html_title.'</h3></body></html>',2);
+                $this->pdf->WriteHTML(
+                    '<html><body><h3>' . $html_title . '</h3></body></html>',
+                    2
+                );
             }
 
             $file_info = pathinfo($file);
@@ -222,12 +255,19 @@ class PDF
                             if (strpos($old_src, 'http') === false) {
                                 if (strpos($old_src, '/main/default_course_document') === false) {
                                     $old_src_fixed = '';
-                                    if (api_get_path(REL_PATH) != '/') {
-                                        $old_src_fixed = str_replace(api_get_path(REL_PATH).'courses/'.$course_data['path'].'/document/', '', $old_src);
+
+                                    if (strpos($old_src, '/main/img') === false) {
+                                        if (api_get_path(REL_PATH) != '/') {
+                                            $old_src_fixed = str_replace(api_get_path(REL_PATH).'courses/'.$course_data['path'].'/document/', '', $old_src);
+                                        } else {
+                                            $old_src_fixed = str_replace('courses/'.$course_data['path'].'/document/', '', $old_src);
+                                        }
+
+                                        $new_path = $document_path.$old_src_fixed;
                                     } else {
-                                        $old_src_fixed = str_replace('courses/'.$course_data['path'].'/document/', '', $old_src);
+                                        $new_path = $old_src;
                                     }
-                                    $new_path = $document_path.$old_src_fixed;
+
                                     $document_html= str_replace($old_src, $new_path, $document_html);
                                 }
                             } else {
@@ -269,7 +309,8 @@ class PDF
             $pdf_name = replace_dangerous_char($pdf_name);
             $output_file = $pdf_name.'.pdf';
         }
-        $this->pdf->Output($output_file, 'D');       /// F to save the pdf in a file
+        // F to save the pdf in a file
+        $this->pdf->Output($output_file, 'D');
         exit;
     }
 
@@ -281,9 +322,12 @@ class PDF
      * @param   string  course code (if you are using html that are located in the document tool you must provide this)
      * @return  string Web path
      */
-    public function content_to_pdf($document_html, $css = '', $pdf_name = '', $course_code = null)
-    {
-
+    public function content_to_pdf(
+        $document_html,
+        $css = '',
+        $pdf_name = '',
+        $course_code = null
+    ) {
         global $_configuration;
 
         if (empty($document_html)) {
@@ -297,7 +341,7 @@ class PDF
         );
 
         // Formatting the pdf
-       	$course_data = api_get_course_info($course_code);
+        $course_data = api_get_course_info($course_code);
 
         self::format_pdf($course_data);
 
@@ -394,7 +438,7 @@ class PDF
 
     /**
      * Deletes the watermark from the Platform or Course
-     * @param   string  course code (optional)
+     * @param   string  $course_code course code (optional)
      * @param   mixed   web path of the watermark image, false if there is nothing to return
      */
     public function delete_watermark($course_code = null)
@@ -417,9 +461,9 @@ class PDF
 
     /**
      * Uploads the pdf watermark in the main/default_course_document directory or in the course directory
-     * @param	string	filename
-     * @param	string	path of the file
-     * @param	string	course code
+     * @param	string	$filename filename
+     * @param	string	$source_file path of the file
+     * @param	string	$course_code
      * @return 	mixed	web path of the file if sucess, false otherwise
      */
     public function upload_watermark($filename, $source_file, $course_code = null)
@@ -442,7 +486,7 @@ class PDF
         $my_image = new Image($source_file);
         $result = $my_image->send_image($course_image, -1, 'png');
         if ($result) {
-        	$result = $web_path;
+            $result = $web_path;
         }
         return $result;
     }
@@ -473,26 +517,56 @@ class PDF
         $right_content   = '{PAGENO} / {nb}';
 
         //@todo remove this and use a simpler way
-        $footer = array (
-              'odd' => array (
-                'L' => array (
-                  'content' => $left_content,  'font-size' => 10,'font-style' => 'B','font-family' => 'serif','color'=>'#000000'),
-                'C' => array (
-                  'content' => $center_content,'font-size' => 10,'font-style' => 'B','font-family' => 'serif','color'=>'#000000'),
-                'R' => array (
-                  'content' => $right_content, 'font-size' => 10,'font-style' => 'B','font-family' => 'serif','color'=>'#000000'),
+        $footer = array(
+            'odd' => array(
+                'L' => array(
+                    'content' => $left_content,
+                    'font-size' => 10,
+                    'font-style' => 'B',
+                    'font-family' => 'serif',
+                    'color' => '#000000'
+                ),
+                'C' => array(
+                    'content' => $center_content,
+                    'font-size' => 10,
+                    'font-style' => 'B',
+                    'font-family' => 'serif',
+                    'color' => '#000000'
+                ),
+                'R' => array(
+                    'content' => $right_content,
+                    'font-size' => 10,
+                    'font-style' => 'B',
+                    'font-family' => 'serif',
+                    'color' => '#000000'
+                ),
                 'line' => 1,
-              ),
-             'even' => array (
-                'L' => array (
-                  'content' => $left_content,  'font-size' => 10,'font-style' => 'B','font-family' => 'serif','color'=>'#000000'),
-                'C' => array (
-                  'content' => $center_content,'font-size' => 10,'font-style' => 'B','font-family' => 'serif','color'=>'#000000'),
-                'R' => array (
-                  'content' => $right_content, 'font-size' => 10,'font-style' => 'B','font-family' => 'serif','color'=>'#000000'),
+            ),
+            'even' => array(
+                'L' => array(
+                    'content' => $left_content,
+                    'font-size' => 10,
+                    'font-style' => 'B',
+                    'font-family' => 'serif',
+                    'color' => '#000000'
+                ),
+                'C' => array(
+                    'content' => $center_content,
+                    'font-size' => 10,
+                    'font-style' => 'B',
+                    'font-family' => 'serif',
+                    'color' => '#000000'
+                ),
+                'R' => array(
+                    'content' => $right_content,
+                    'font-size' => 10,
+                    'font-style' => 'B',
+                    'font-family' => 'serif',
+                    'color' => '#000000'
+                ),
                 'line' => 1,
-              ),
-            );
+            ),
+        );
         // defines footer for Odd and Even Pages - placed at Outer margin see http://mpdf1.com/manual/index.php?tid=151&searchstring=setfooter
         $this->pdf->SetFooter($footer);
     }
@@ -619,14 +693,15 @@ class PDF
         $pdf->SetSubject('Exported from Chamilo Documents');
         $pdf->SetKeywords('Chamilo Documents');
         */
-        $this->pdf->directionality      = api_get_text_direction(); // TODO: To be read from the html document.
-        $this->pdf->useOnlyCoreFonts    = true;
+        // TODO: To be read from the html document.
+        $this->pdf->directionality = api_get_text_direction();
+        $this->pdf->useOnlyCoreFonts = true;
         // Use different Odd/Even headers and footers and mirror margins
         $this->pdf->mirrorMargins       = 1;
 
         // Add decoration only if not stated otherwise
         if ($complete) {
-            //Adding watermark
+            // Adding watermark
             if (api_get_setting('pdf_export_watermark_enable') == 'true') {
                 $watermark_file = self::get_watermark($course_code);
 

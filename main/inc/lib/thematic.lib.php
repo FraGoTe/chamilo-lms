@@ -234,7 +234,9 @@ class Thematic
 	        $condition_session = '';
 	        if (empty($session_id)) {
                 $condition_session = api_get_session_condition(0);
-	        }
+	        } else {
+                $condition_session = api_get_session_condition($session_id, true, true);
+            }
 	    	$condition = " WHERE active = 1 $condition_session ";
 	    }
 		$sql = "SELECT * FROM $tbl_thematic $condition AND c_id = $course_id ORDER BY display_order ";
@@ -910,7 +912,7 @@ class Thematic
         $error = null;
 		$a_thematic_advance_ids = array();
         $course_id = api_get_course_int_id();
-
+        $sessionId = api_get_session_id();
 
 		if (!empty($thematic_data)) {
 			foreach ($thematic_data as $thematic) {
@@ -919,9 +921,9 @@ class Thematic
 				if (!empty($thematic_advance_data[$thematic['id']])) {
 					foreach ($thematic_advance_data[$thematic['id']] as $thematic_advance) {
 
-						$item_info = api_get_item_property_info(api_get_course_int_id(), 'thematic_advance', $thematic_advance['id']);
+						$item_info = api_get_item_property_info(api_get_course_int_id(), 'thematic_advance', $thematic_advance['id'], $sessionId);
 
-						if ($item_info['id_session'] == api_get_session_id()) {
+						if ($item_info['id_session'] == $sessionId) {
 
     						$a_thematic_advance_ids[] = $thematic_advance['id'];
 
@@ -953,17 +955,16 @@ class Thematic
 
             // update item_property
             $tbl_item_property = Database::get_course_table(TABLE_ITEM_PROPERTY);
-            $session_id = api_get_session_id();
 
             // get all thematic advance done
             $rs_thematic_done = Database::query("SELECT ref FROM $tbl_item_property
-                                WHERE c_id = $course_id AND tool='thematic_advance' AND lastedit_type='ThematicAdvanceDone' AND id_session = $session_id ");
+                                WHERE c_id = $course_id AND tool='thematic_advance' AND lastedit_type='ThematicAdvanceDone' AND id_session = $sessionId ");
             if (Database::num_rows($rs_thematic_done) > 0) {
                 while ($row_thematic_done = Database::fetch_array($rs_thematic_done)) {
                     $ref = $row_thematic_done['ref'];
                     if (in_array($ref, $a_thematic_advance_ids)) { continue; }
                     // update items
-                    Database::query("UPDATE $tbl_item_property SET lastedit_date='".api_get_utc_datetime()."', lastedit_type='ThematicAdvanceUpdated', lastedit_user_id = $user_id WHERE c_id = $course_id AND tool='thematic_advance' AND ref=$ref AND id_session = $session_id  ");
+                    Database::query("UPDATE $tbl_item_property SET lastedit_date='".api_get_utc_datetime()."', lastedit_type='ThematicAdvanceUpdated', lastedit_user_id = $user_id WHERE c_id = $course_id AND tool='thematic_advance' AND ref=$ref AND id_session = $sessionId  ");
                 }
             }
 		}
@@ -1002,9 +1003,10 @@ class Thematic
 
 	/**
 	 * Get next thematic advance not done from thematic details interface
+     * @param   int Offset (if you want to get an item that is not directly the next)
 	 * @return	int		next thematic advance not done
 	 */
-	public function get_next_thematic_advance_not_done() {
+	public function get_next_thematic_advance_not_done($offset = 1) {
 
 		$thematic_data = $this->get_thematic_list();
 		$thematic_advance_data = $this->get_thematic_advance_list();
@@ -1012,7 +1014,6 @@ class Thematic
 		$next_advance_not_done = 0;
 		if (!empty($thematic_data)) {
 			foreach ($thematic_data as $thematic) {
-				$thematic_id = $thematic['id'];
 				if (!empty($thematic_advance_data[$thematic['id']])) {
 					foreach ($thematic_advance_data[$thematic['id']] as $thematic_advance) {
 						if ($thematic_advance['done_advance'] == 0) {
@@ -1024,7 +1025,9 @@ class Thematic
 		}
 
 		if (!empty($a_thematic_advance_ids)) {
-			$next_advance_not_done = array_shift($a_thematic_advance_ids);
+            for ($i = 0; $i < $offset; $i++) {
+                $next_advance_not_done = array_shift($a_thematic_advance_ids);
+            }
 			$next_advance_not_done = intval($next_advance_not_done);
 		}
 

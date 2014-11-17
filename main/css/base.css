@@ -30,11 +30,10 @@ legend {
 }
 
 #header_right #notifications {
-    padding:40px 0px 0px 0px;
+    padding:0;
 }
 
 #header_right #notifications li {
-    width:60px;
     text-align: right;
 }
 
@@ -44,6 +43,202 @@ header #logo {
 header #logo img{
     margin-left: 30px;
 }
+
+/* button load ajax form */
+
+.button-load{
+  background: url("../img/icons/64/file_upload.png") no-repeat center 20px;
+  padding-top: 70px;
+  /*-webkit-animation:glide 2250ms infinite;
+  animation:glide 2250ms infinite;*/
+}
+/*@-webkit-keyframes glide {
+  from {
+    background-position: center 0;
+  } to {
+      background-position: center 20px;
+
+    }
+
+}
+
+@keyframes glide {
+  from {
+    background-position:center 0;
+  } to {
+      background-position:center 20px;
+
+    }
+}*/
+/* START COURSE PROGRESS */
+.thematic-postit{
+  padding-top: 5px;
+  padding-bottom: px;
+}
+.thematic-postit .tittle-score{
+  padding-bottom: 5px;
+  font-size: 16px;
+  color: #006699;
+}
+.thematic-postit .topics{
+  font-size: 12px;
+  padding-bottom: 5px;
+  color: #006699;
+}
+.thematic-postit .items-progress {
+  border-top: 2px solid #C4DDEB;
+  padding: 5px;
+  margin-top: 0px;
+  background-color: #ECF4F8;
+}
+.thematic-postit .items-progress.current {
+    border-top: 2px solid #C4DDEB;
+    padding: 5px;
+    margin-top: 0px;
+    background-color: #C4DDEB;
+}
+.thematic-postit .items-progress .date{
+  color: #666;
+  font-size: 11px;
+  display: block;
+}
+.thematic-postit .items-progress .title{
+  font-size: 14px;
+  line-height: 18px;
+  display: block;
+}
+.thematic-postit .items-progress .time{
+  display: block;
+  padding-top: 5px;
+}
+.thematic-postit .info-progress{
+  padding: 10px;
+}
+.thematic-postit .score-thematic .score{
+  text-align: right;
+}
+
+.thematic-postit .score-thematic .name-student{
+  font-weight: bold;
+  font-size: 16px;
+  padding-left: 70px;
+  margin: 0px;
+}
+.thematic-postit .score-thematic{
+  color: #666;
+}
+.thematic-postit .score-thematic p{
+  padding: 0px;
+  margin: 0px;
+}
+.thematic-postit .row-fluid.score-thematic {
+  padding-top: 5px;
+}
+.thematic-postit .accordion-heading .accordion-toggle {
+  display: inline;
+  padding-bottom: 3px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 3px;
+  float: right;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 15px;
+}
+.thematic-postit .accordion-heading .title-accordion{
+  padding:0px;
+  background:url(thematic.png) no-repeat left bottom transparent;
+}
+
+.thematic-postit .name-student h2{
+  font-size: 18px;
+  margin: 0;
+}
+.thematic-postit .accordion-heading h3, .accordion-heading h2{
+  line-height: 17px;
+}
+.thematic-postit .accordion-group{
+  border: 1px solid #D4E6F0;
+
+}
+.thematic-postit .name-student h3{
+  font-size: 13px;
+  font-weight: normal;
+  margin: 0;
+
+}
+.thematic-postit .accordion-heading {
+  background-color: #E7F1F7;
+}
+.thematic-postit .items-progress p{
+  margin-bottom: 3px;
+}
+.thematic-postit .accordion-body.collapse {
+  height: 0;
+  display: none;
+}
+.thematic-postit .accordion-body.collapse.in {
+  height: auto;
+  display: block;
+}
+
+/* END COURSE PROGRESS*/
+
+/* SESSION CATALOG*/
+.session-group .padding-clear{
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+/*.session-group .thumbnail{
+    border: none;
+    box-shadow: none;
+}*/
+.session-group .border-info{
+    /*border-bottom: 1px solid #ccc;*/
+    padding-bottom: 5px;
+}
+.session-group .buttom-subscribed{
+    padding-top: .5em;
+    padding-bottom: .5em;
+}
+.session-group .time{
+    font-size: 12px;
+}
+.session-group .accordion-heading{
+    background-color: #D2E7F3;
+}
+.session-group .accordion-group{
+    border: 1px solid #B7D7EF;
+}
+.session-group .accordion-inner{
+    border-top: 1px solid #B7D7EF;
+    background-color: #FFFFFF;
+}
+.buttom-subscribed .btn{
+    display: block;
+}
+.session-group .items-session{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.session-group .items-session li{
+    padding-bottom: 5px;
+}
+.well .nav.nav-list > li{
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+.well .nav-list > li > a {
+  font-size: 13px;
+  padding-bottom: 0;
+  padding-top: 0;
+}
+.well .form-search .input-append .search-session{
+    width: 130px;
+}
+/* SESSION CATALOG END*/
+
 .subnav .brand {
     display:none;
 }
@@ -198,9 +393,10 @@ header {
   width: 0%;
  }
 
- .breadcrumb li img:nth-child(n) {
+.breadcrumb li img:nth-child(n) {
   width: auto;
- }
+  margin-top: -4px;
+}
 
 /* To fix the increase/decrease buttons */
 label, input, button, select, textarea, p {
@@ -300,10 +496,6 @@ form .formw input {
 [dir=rtl] #top_main_content .span9 {
   float: right;
 }
-#top_main_content .span6 {
-  width: 460px;
-}
-
 
 /* New changes Chamilo 1.9 */
 
@@ -1293,39 +1485,6 @@ button.next.disabled {
     color: #000000;
     padding-top: 10px;
     text-shadow: gray 3px 3px 2px;
-}
-
-/* THEMATIC ADVANCE */
-.thematic-postit {
-    width:250px;
-    height:auto;
-    overflow:hidden;
-    float:right;
-}
-.thematic-postit-top {
-    background-image: url('../img/postit_top.png');
-    height: 38px;
-
-}
-.thematic-postit-top h3 {
-    margin:20px 5px 10px 20px;
-    padding-top:40px;
-}
-
-.thematic-postit-bottom {
-    background-image: url('../img/postit_bottom.png');
-    height:40px;
-}
-.thematic-postit-center {
-    background-image: url('../img/postit_center.png');
-    height:auto;
-    margin-top: 0px;
-    margin-bottom:-16px;
-    padding: 28px 20px 0;
-}
-
-#titlethematic{
-    text-transform: uppercase;
 }
 
 /* ATTENDANCE */
@@ -3175,6 +3334,330 @@ form .formw .freeze {
 }
 
 /* jsPlumb */
+/* ****************************************************
+                     CSS SKILL
+ **************************************************** */
+.skill-options .legend{
+  border: 1px dashed #cccccc;
+  padding: 1em;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  background-color: #FFFFFF;
+}
+.skill-options .legend .title-skill,
+.skill-options .saved_profiles .title-skill
+{
+  color: #666655;
+  padding-bottom: 1em;
+  font-size: 16px;
+}
+.skill-options .skill-profile .title-skill{
+  color: #666655;
+  padding-bottom: .5em;
+  font-size: 18px;
+}
+.skill-options .skill-home{
+  margin-top: 1em;
+}
+.skill-options .btn-block {
+  box-sizing: border-box;
+  display: block;
+  padding-left: 0;
+  padding-right: 0;
+  width: 100%;
+}
+.skill-options .accordion-heading {
+  border-bottom: 0px none;
+  background: #3FA5C3;
+}
+.skill-options .accordion-heading a{
+  color: #FFFFFF;
+}
+.skill-options .button-skill{
+  margin-top: 1em;
+}
+.skill-options .form-search .holder{
+  border: 1px solid #cccccc;
+  padding-left: .5em;
+  padding-right: .5em;
+}
+.skill-options .accordion-inner {
+  padding: 9px 15px;
+  /*border: 1px solid #dadada;*/
+  background-color: #FFFFFF;
+}
+.skill-options .items_save{
+  margin-top: .5em;
+  margin-bottom: .5em;
+  display: inline-block;
+  height: auto !important;
+  clear: both;
+  width: 100%;
+}
+.skill-options .accordion-group {
+  margin-bottom: 2px;
+  border: 1px solid #3FA5C3;
+  border-radius: 4px;
+}
+.skill-options .accordion-inner {
+  padding: 9px 15px;
+  border-top: 1px solid #3FA5C3;
+}
+.skill-options .load_wheel{
+  -moz-border-radius:6px;
+  -webkit-border-radius:6px;
+  border-radius:6px;
+  border:1px solid #C09853;
+  background:#FCF8E3;
+  padding:1px 5px 2px;
+  color:#333;
+}
+.skill-options .skill-items{
+  padding-bottom: 1em;
+  margin-bottom: .5em;
+  margin-top: .5em;
+}
+.skill-options .skill-winner{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.skill-options .skill-winner li{
+  float: left;
+  margin-right: 1em;
+  padding-bottom: 1em;
+}
+.skill-options .skill-winner li a{
+  background: url("../img/icons/16/winner.png") no-repeat;
+  padding-left: 1.5em;
+  padding-bottom: 1em;
+}
+.skill-options .skill-profile{
+  width: 100%;
+  display: block;
+  border: 1px solid #CCC;
+  border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  margin-top: 1em;
+  background-color: #FFFFFF;
+  padding-top: .5em;
+  padding-bottom: .5em;
+}
+.skill-options .section-info-skill{
+  display: inline-block;
+  padding-top: .5em;
+  padding-bottom: .5em;
+  width: 100%;
+  clear: both;
+}
+.skill-options .skill-profile .avatar{
+  display: block;
+  width: auto;
+  text-align: center;
+}
+.skill-options .skill-profile .info-user{
+  display: block;
+  width: auto;
+  margin-left: 1em;
+  padding: 1em;
+}
+.skill-options .button-skill{
+  margin-bottom: .5em;
+}
+.page-items-profile{
+  padding-top: 2em;
+  padding-bottom: 2em;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+.page-items-profile .title-skill{
+  margin-bottom: 1em;
+  font-size: 18px;
+  color: #333333;
+  margin-top: 1em;
+}
+.page-items-profile .block-items{
+  display: block;
+  width: 22.5%;
+  margin:10px;
+  float: left;
+}
+.page-items-profile .award-items{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.page-items-profile .number-skill{
+  background-color: #FFFFFF;
+  padding-top: .5em;
+  padding-bottom: .5em;
+  padding-left: .5em;
+  margin-bottom: 1em;
+  border: 1px solid #cccccc;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+}
+.page-items-profile .block-items .border-items{
+  background-color: #EFEFEF;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border: 1px solid #cccccc;
+}
+.page-items-profile .items-info{
+  padding:1em;
+}
+.page-items-profile .info-profile{
+  margin-top: 1em;
+  margin-bottom: .5em;
+}
+.page-items-profile .items-info .avatar-profile{
+  text-align: center;
+  background: #FFFFFF;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  border: 1px solid #cccccc;
+}
+.skill_partition {
+  cursor: pointer;
+  stroke: #000000;
+  stroke-width: 0.5px;
+}
+
+#skill_holder li {
+  float:left;
+  padding-right: 10px;
+  margin-bottom: .5em;
+}
+
+
+/* ****************************************************
+                     END SKILL
+ **************************************************** */
+/*SCORM CSS BASE */
+#learning_path_left_zone .home{
+  display: inline-block;
+  width: 94%;
+  margin-bottom: .5em;
+  margin-top: .5em;
+  font-size: 12px;
+}
+#lp_navigation_elem {
+  float: left;
+}
+#lp_navigation_elem {
+  padding-left: 15px;
+  width: 160px;
+}
+#lp_navigation_elem .buttons {
+  margin-bottom: .5em;
+  text-align: center;
+}
+#author_image {
+  border: 2px solid #B9C9FF;
+  float: left;
+  margin-bottom: .5em;
+  padding: 8px;
+  position: relative;
+  background-color: #f0f1fa;
+  width: 94%;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+}
+#author_image #author_icon{
+  border: 2px solid #FFFFFF;
+}
+#learning_path_left_zone .scorm_title{
+  font-size: 20px;
+  color: #666;
+  margin-bottom: .5em;
+  margin-top: .5em;
+}
+/* for section */
+.scorm_item_section.scorm_completed{
+  background:url("../img/icon_completed_section.png")no-repeat 280px center #606c88;
+  padding-right: 1.5em;
+}
+.scorm_item_section{
+  background: #606c88; /* Old browsers */
+  background: -moz-linear-gradient(top, #606c88 0%, #3f4c6b 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#606c88), color-stop(100%,#3f4c6b)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #606c88 0%,#3f4c6b 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #606c88 0%,#3f4c6b 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #606c88 0%,#3f4c6b 100%); /* IE10+ */
+  background: linear-gradient(to bottom, #606c88 0%,#3f4c6b 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b',GradientType=0 ); /* IE6-9 */
+  color: #FFFFFF;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 12px;
+}
+.scorm_item_section .scorm_section_level_0{
+  padding-left: .5em;
+  padding-right: .5em;
+}
+.scorm_item_section .scorm_section_level_1{
+  padding-left: 1.5em;
+  padding-right: .5em;
+}
+.scorm_item_section .scorm_section_level_2{
+  padding-left: 2.5em;
+  padding-right: .5em;
+}
+.scorm_item_section .scorm_section_level_3{
+  padding-left: 3.5em;
+  padding-right: .5em;
+}
+/* items scorm*/
+.scorm_item_normal.scorm_completed {
+  background:url("../img/icon_completed.png") no-repeat 280px center;
+}
+.scorm_item_normal.scorm_failed{
+  background:url("../img/icon_failed.png") no-repeat 280px center;
+}
+.scorm_item_normal .scorm_item_level_0{
+  padding-left: .5em;
+  padding-right: 1.5em;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.scorm_item_normal .scorm_item_level_1{
+  padding-left: 1.8em;
+  padding-right: 1.5em;
+  background:url("../img/level_one.png") no-repeat 0 top;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.scorm_item_normal .scorm_item_level_2{
+  padding-left: 2.5em;
+  padding-right: 1.5em;
+  background:url("../img/level_two.png") no-repeat 0 top;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.scorm_item_normal .scorm_item_level_3{
+  padding-left: 3.5em;
+  padding-right: 1.5em;
+  background:url("../img/level_tree.png") no-repeat 0 top;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.scorm_highlight a{
+  color: #000;
+  font-weight: bold;
+  background-color: #fffdd1;
+}
+
+/* END SCORM CSS BASE*/
 
 .skill_root {
     box-shadow: 2px 2px 19px #aaa;
@@ -3698,10 +4181,6 @@ a:active{
     text-shadow: 1px 1px 2px #000000;
 }
 
-#course_tools .row h3 {
-    margin-top:10px;
-}
-
 .td_actions {
     width: 250px;
 }
@@ -3768,14 +4247,16 @@ a.forum_group_link {
 .forum_description {
     color: #000;
     font-weight: normal;
-    font-size: 11px;
+    font-size: 15px;
+    padding-top: 1em;
+    padding-bottom: .5em;
 }
 .forum_description p{
     font-size: 11px;
 }
-.forum_title {
+.forum_title h1{
     color: #000;
-    font-size: 14px;
+    padding-top: 1em;
 }
 .forum_low_description {
     color: #737780;
@@ -4682,16 +5163,6 @@ i.size-32.icon-new-work{
 }
 
 /* Default skill partition colors */
-.skill_partition {
-    cursor: pointer;
-    stroke: #000000;
-    stroke-width: 1.5;
-}
-
-#skill_holder li {
-    float:left;
-    /*width: 120px;*/
-}
 
 #filepaths input{
     margin-bottom:5px;
@@ -4790,4 +5261,12 @@ i.size-32.icon-new-work{
 
 .chzn-container-single .chzn-search {
     z-index: 1010;
+}
+
+/* Balances ".thumbnail > img" from bootstrap */
+.thumbnail > a > img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
 }

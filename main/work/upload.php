@@ -39,6 +39,10 @@ if (empty($workInfo)) {
     api_not_allowed(true);
 }
 
+if ($workInfo['active'] != 1) {
+    api_not_allowed(true);
+}
+
 allowOnlySubscribedUser($user_id, $work_id, $course_id);
 
 $is_course_member = CourseManager::is_user_subscribed_in_real_or_linked_course($user_id, $course_code, $session_id);
@@ -89,7 +93,14 @@ if ($form->validate()) {
     if ($student_can_edit_in_session && $check) {
         $values = $form->getSubmitValues();
         // Process work
-        $error_message = processWorkForm($workInfo, $values, $course_info, $session_id, $group_id, $user_id);
+        $error_message = processWorkForm(
+            $workInfo,
+            $values,
+            $course_info,
+            $session_id,
+            $group_id,
+            $user_id
+        );
         $script = 'work_list.php';
         if ($is_allowed_to_edit) {
             $script = 'work_list_all.php';

@@ -6,9 +6,7 @@
  *	@author Olivier Brouckaert
  *	@package chamilo.chat
  */
-/**
- * Code
- */
+
 define('FRAME', 'online');
 $language_file = array('chat');
 
@@ -17,6 +15,7 @@ require_once '../inc/global.inc.php';
 $course = api_get_course_id();
 $group_id = api_get_group_id();
 $session_id = api_get_session_id();
+$user_id = api_get_user_id();
 $session_condition = api_get_session_condition($session_id);
 $group_condition = " AND to_group_id = '$group_id'";
 
@@ -27,24 +26,22 @@ if (!empty($group_id)) {
     $extra_condition = $session_condition;
 }
 
-$user_id = api_get_user_id();
-
 if (!empty($course)) {
     $showPic = isset($_GET['showPic']) ? intval($_GET['showPic']) : null;
-    $tbl_course_user			= Database::get_main_table(TABLE_MAIN_COURSE_USER);
-    $tbl_session_course_user	= Database::get_main_table(TABLE_MAIN_SESSION_COURSE_USER);
-    $tbl_session				= Database::get_main_table(TABLE_MAIN_SESSION);
-    $tbl_session_course			= Database::get_main_table(TABLE_MAIN_SESSION_COURSE);
-    $tbl_user					= Database::get_main_table(TABLE_MAIN_USER);
-    $tbl_chat_connected			= Database::get_course_table(TABLE_CHAT_CONNECTED);
+    $tbl_course_user = Database::get_main_table(TABLE_MAIN_COURSE_USER);
+    $tbl_session_course_user = Database::get_main_table(TABLE_MAIN_SESSION_COURSE_USER);
+    $tbl_session = Database::get_main_table(TABLE_MAIN_SESSION);
+    $tbl_session_course = Database::get_main_table(TABLE_MAIN_SESSION_COURSE);
+    $tbl_user = Database::get_main_table(TABLE_MAIN_USER);
+    $tbl_chat_connected = Database::get_course_table(TABLE_CHAT_CONNECTED);
 
     $query = "SELECT username FROM $tbl_user WHERE user_id='".$user_id."'";
     $result = Database::query($query);
 
     list($pseudo_user) = Database::fetch_array($result);
 
-    $isAllowed = !(empty($pseudo_user) || !$_cid);
-    $isMaster = (bool)$is_courseAdmin;
+	$isAllowed = !(empty($pseudo_user) || !$_cid);
+	$isMaster = api_is_course_admin();
 
     $date_inter = date('Y-m-d H:i:s', time() - 120);
 
@@ -120,14 +117,14 @@ if (!empty($course)) {
 					} else {
 						$status = CourseManager::is_course_teacher($user['user_id'], $_SESSION['_course']['id']) ? 1 : 5;
 					}
-				$userImage = UserManager::get_user_picture_path_by_id($user['user_id'], 'web', false, true);
-                                if (substr($userImage['file'],0,7) != 'unknown') {
-				    $fileUrl = $userImage['dir'].'medium_'.$userImage['file'];
-                                } else {
-				    $fileUrl = $userImage['dir'].$userImage['file'];
-                                }
-				$email = $user['email'];
-				$url_user_profile=api_get_path(WEB_CODE_PATH).'social/profile.php?u='.$user['user_id'].'&';
+				    $userImage = UserManager::get_user_picture_path_by_id($user['user_id'], 'web', false, true);
+                    if (substr($userImage['file'],0,7) != 'unknown') {
+				        $fileUrl = $userImage['dir'].'medium_'.$userImage['file'];
+                    } else {
+				        $fileUrl = $userImage['dir'].$userImage['file'];
+                    }
+				    $email = $user['email'];
+				    $url_user_profile=api_get_path(WEB_CODE_PATH).'social/profile.php?u='.$user['user_id'].'&';
 			?>
 			<li class="list-group-item">
 				<img src="<?php echo $fileUrl;?>" border="0" width="50" alt="" class="user-image-chat" />
@@ -141,9 +138,12 @@ if (!empty($course)) {
 						}
 					?>
 				</div>
-				<div class="user-email"><?php echo $email; ?></div>
+				<div class="user-email"><?php echo $user['username']; ?></div>
 			</li>
-			<?php  } unset($users); ?>
+			<?php
+                }
+                unset($users);
+            ?>
 		</ul>
 	</div></div></div></div>
 	<?php

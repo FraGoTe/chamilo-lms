@@ -15,6 +15,10 @@ if (empty($id) || empty($work)) {
     api_not_allowed();
 }
 
+if ($work['active'] != 1) {
+    api_not_allowed(true);
+}
+
 $interbreadcrumb[] = array ('url' => 'work.php', 'name' => get_lang('StudentPublications'));
 
 $my_folder_data = get_work_data_by_id($work['parent_id']);
@@ -40,13 +44,22 @@ if (user_is_author($id) || $course_info['show_score'] == 0 && $work['active'] ==
                 if (isset($_FILES["file"])) {
                     $_POST['file'] = $_FILES["file"];
                 }
-                addWorkComment(api_get_course_info(), api_get_user_id(), $work, $_POST);
+                addWorkComment(
+                    api_get_course_info(),
+                    api_get_user_id(),
+                    $my_folder_data,
+                    $work,
+                    $_POST
+                );
                 $url = api_get_path(WEB_CODE_PATH).'work/view.php?id='.$work['id'].'&'.api_get_cidreq();
                 header('Location: '.$url);
                 exit;
                 break;
             case 'delete_attachment':
-                deleteCommentFile($_REQUEST['comment_id'], api_get_course_info());
+                deleteCommentFile(
+                    $_REQUEST['comment_id'],
+                    api_get_course_info()
+                );
                 $url = api_get_path(WEB_CODE_PATH).'work/view.php?id='.$work['id'].'&'.api_get_cidreq();
                 header('Location: '.$url);
                 exit;

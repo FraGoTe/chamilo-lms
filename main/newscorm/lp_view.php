@@ -12,9 +12,6 @@
 * @author Isthvan Mandak, several new features
 * @author Roan Embrechts, code improvements and refactoring
 */
-/**
- * Code
- */
 
 use \ChamiloSession as Session;
 
@@ -41,12 +38,24 @@ api_protect_course_script();
 $lp_id = intval($_GET['lp_id']);
 
 // Check if the learning path is visible for student - (LP requisites)
-if (!api_is_allowed_to_edit(null, true) && !learnpath::is_lp_visible_for_student($lp_id, api_get_user_id())) {
-    api_not_allowed(true);
+
+if (!api_is_platform_admin()) {
+    if (!api_is_allowed_to_edit(null, true) &&
+        !learnpath::is_lp_visible_for_student($lp_id, api_get_user_id())
+    ) {
+        api_not_allowed(true);
+    }
 }
 
-//Checking visibility (eye icon)
-$visibility = api_get_item_visibility(api_get_course_info(), TOOL_LEARNPATH, $lp_id, $action, api_get_user_id(), api_get_session_id());
+// Checking visibility (eye icon)
+$visibility = api_get_item_visibility(
+    api_get_course_info(),
+    TOOL_LEARNPATH,
+    $lp_id,
+    $action,
+    api_get_user_id(),
+    api_get_session_id()
+);
 if (!api_is_allowed_to_edit(false, true, false, false) && intval($visibility) == 0) {
     api_not_allowed(true);
 }
@@ -63,13 +72,13 @@ if ($debug) {
 
 $_SESSION['oLP']->error = '';
 $lp_item_id = $_SESSION['oLP']->get_current_item_id();
-$lp_type    = $_SESSION['oLP']->get_type();
+$lp_type = $_SESSION['oLP']->get_type();
 
-$course_code    = api_get_course_id();
-$course_id      = api_get_course_int_id();
-$user_id        = api_get_user_id();
-$platform_theme = api_get_setting('stylesheets'); // Plataform's css.
-$my_style       = $platform_theme;
+$course_code = api_get_course_id();
+$course_id = api_get_course_int_id();
+$user_id = api_get_user_id();
+$platform_theme = api_get_setting('stylesheets'); // Platform's css.
+$my_style = $platform_theme;
 
 $htmlHeadXtra[] = '<script src="'.api_get_path(WEB_LIBRARY_PATH).'javascript/jquery.lp_minipanel.js" type="text/javascript" language="javascript"></script>';
 $htmlHeadXtra[] = '<script>
@@ -134,9 +143,8 @@ if ($debug) {
 
 $get_toc_list = $_SESSION['oLP']->get_toc();
 $type_quiz = false;
-
 foreach ($get_toc_list as $toc) {
-    if ($toc['id'] == $lp_item_id && ($toc['type']=='quiz')) {
+    if ($toc['id'] == $lp_item_id && $toc['type'] == 'quiz') {
         $type_quiz = true;
     }
 }
@@ -148,6 +156,8 @@ if (!isset($src)) {
             $_SESSION['oLP']->stop_previous_item();
             $htmlHeadXtra[] = '<script src="scorm_api.php" type="text/javascript" language="javascript"></script>';
             $prereq_check = $_SESSION['oLP']->prerequisites_match($lp_item_id);
+
+
             if ($prereq_check === true) {
                 $src = $_SESSION['oLP']->get_link('http', $lp_item_id, $get_toc_list);
 
@@ -203,20 +213,23 @@ if ($debug) {
     error_log('$_GET[lp_item_id]: '.intval($_GET['lp_item_id']));
 }
 
-if ($type_quiz && !empty($_REQUEST['exeId']) && isset($lp_id) && isset($_GET['lp_item_id'])) {
+if (!empty($_REQUEST['exeId']) &&
+    isset($lp_id) &&
+    isset($_GET['lp_item_id'])
+) {
     global $src;
-
     $_SESSION['oLP']->items[$_SESSION['oLP']->current]->write_to_db();
 
-    $TBL_TRACK_EXERCICES    = Database::get_statistic_table(TABLE_STATISTIC_TRACK_E_EXERCICES);
-    $TBL_LP_ITEM_VIEW       = Database::get_course_table(TABLE_LP_ITEM_VIEW);
-    $TBL_LP_ITEM            = Database::get_course_table(TABLE_LP_ITEM);
-    $safe_item_id           = intval($_GET['lp_item_id']);
-    $safe_id                = $lp_id;
-    $safe_exe_id            = intval($_REQUEST['exeId']);
+    $TBL_TRACK_EXERCICES = Database::get_statistic_table(TABLE_STATISTIC_TRACK_E_EXERCICES);
+    $TBL_LP_ITEM_VIEW = Database::get_course_table(TABLE_LP_ITEM_VIEW);
+    $TBL_LP_ITEM = Database::get_course_table(TABLE_LP_ITEM);
+    $safe_item_id = intval($_GET['lp_item_id']);
+    $safe_id = $lp_id;
+    $safe_exe_id = intval($_REQUEST['exeId']);
 
-    if ($safe_id == strval(intval($safe_id)) && $safe_item_id == strval(intval($safe_item_id))) {
-
+    if ($safe_id == strval(intval($safe_id)) &&
+        $safe_item_id == strval(intval($safe_item_id))
+    ) {
         $sql = 'SELECT start_date, exe_date, exe_result, exe_weighting
                 FROM ' . $TBL_TRACK_EXERCICES . '
                 WHERE exe_id = '.$safe_exe_id;
@@ -230,7 +243,8 @@ if ($type_quiz && !empty($_REQUEST['exeId']) && isset($lp_id) && isset($_GET['lp
         $score 		= (float)$row_dates['exe_result'];
         $max_score 	= (float)$row_dates['exe_weighting'];
 
-        $sql = "UPDATE $TBL_LP_ITEM SET max_score = '$max_score'
+        $sql = "UPDATE $TBL_LP_ITEM SET
+                    max_score = '$max_score'
                 WHERE c_id = $course_id AND id = '".$safe_item_id."'";
         Database::query($sql);
 
@@ -246,14 +260,19 @@ if ($type_quiz && !empty($_REQUEST['exeId']) && isset($lp_id) && isset($_GET['lp
         if (Database::num_rows($res_last_attempt)) {
         	$row_last_attempt = Database::fetch_row($res_last_attempt);
         	$lp_item_view_id  = $row_last_attempt[0];
-            $sql_upd_score = "UPDATE $TBL_LP_ITEM_VIEW SET status = 'completed' , score = $score, total_time = $mytime
-                              WHERE id='".$lp_item_view_id."' AND c_id = $course_id ";
+            $sql = "UPDATE $TBL_LP_ITEM_VIEW SET
+                        status = 'completed' ,
+                        score = $score,
+                        total_time = $mytime
+                    WHERE id='".$lp_item_view_id."' AND c_id = $course_id ";
 
-            if ($debug) error_log($sql_upd_score);
-            Database::query($sql_upd_score);
+            if ($debug) error_log($sql);
+            Database::query($sql);
 
-            $update_query = "UPDATE $TBL_TRACK_EXERCICES SET orig_lp_item_view_id = $lp_item_view_id  WHERE exe_id = ".$safe_exe_id;
-            Database::query($update_query);
+            $sql = "UPDATE $TBL_TRACK_EXERCICES SET
+                        orig_lp_item_view_id = $lp_item_view_id
+                    WHERE exe_id = ".$safe_exe_id;
+            Database::query($sql);
         }
     }
     if (intval($_GET['fb_type']) > 0) {
@@ -308,7 +327,7 @@ if (!empty ($lp_theme_css) && !empty ($mycourselptheme) && $mycourselptheme != -
     $lp_theme_css = $my_style;
 }
 
-$progress_bar   = $_SESSION['oLP']->get_progress_bar('', -1, '', true);
+$progress_bar   = $_SESSION['oLP']->getProgressBar();
 $navigation_bar = $_SESSION['oLP']->get_navigation_bar();
 $mediaplayer    = $_SESSION['oLP']->get_mediaplayer($autostart);
 
@@ -319,7 +338,7 @@ $sql = "SELECT audio FROM " . $tbl_lp_item . " WHERE c_id = $course_id AND lp_id
 $res_media= Database::query($sql);
 
 if (Database::num_rows($res_media) > 0) {
-    while ($row_media= Database::fetch_array($res_media)) {
+    while ($row_media = Database::fetch_array($res_media)) {
         if (!empty($row_media['audio'])) {
             $show_audioplayer = true;
             break;
@@ -328,7 +347,8 @@ if (Database::num_rows($res_media) > 0) {
 }
 
 echo '<div id="learning_path_main" style="width:100%;height:100%;">';
-$is_allowed_to_edit = api_is_allowed_to_edit(null, true, false, false);
+$is_allowed_to_edit = api_is_allowed_to_edit(false, true, true, false);
+
 if ($is_allowed_to_edit) {
     echo '<div id="learning_path_breadcrumb_zone">';
     global $interbreadcrumb;
@@ -339,15 +359,8 @@ if ($is_allowed_to_edit) {
     echo '</div>';
 }
     echo '<div id="learning_path_left_zone" style="'.$display_none.'"> ';
-    echo '<div id="header">
-            <table>
-                <tr>
-                    <td>';
-                        echo '<a href="lp_controller.php?action=return_to_course_homepage&'.api_get_cidreq().'" target="_self" onclick="javascript: window.parent.API.save_asset();">
-                            <img src="../img/btn_home.png" />
-                        </a>
-                    </td>
-                    <td>';
+    echo '<div id="header">';
+    //echo '<a href="lp_controller.php?action=return_to_course_homepage&'.api_get_cidreq().'" target="_self" onclick="javascript: window.parent.API.save_asset();"></a>';
 
                     // Return to course home.
                     if ($is_allowed_to_edit) {
@@ -367,17 +380,14 @@ if ($is_allowed_to_edit) {
                         $name,
                         $url,
                         array(
-                            'class' => 'link no-border',
+                            'class' => 'home btn btn-small btn-info',
                             'target' => '_self',
                             'onclick' => 'javascript: window.parent.API.save_asset();'
                         )
                     );
 
 
-                    echo '</td>
-                </tr>
-            </table>
-        </div>';
+    echo '</div>';
 ?>
         <!-- end header -->
 
@@ -462,7 +472,7 @@ if ($is_allowed_to_edit) {
         var heightAction = ($('#actions_lp').height())? $('#actions_lp').height() : 0 ;
 
         var heightTop = heightHeader + heightAuthorImg + heightAuthorName + heightMedia + heightTitle + heightAction + 100;
-        heightTop = (heightTop < 230)? heightTop : 230;
+        heightTop = (heightTop < 300)? heightTop : 300;
         var innerHeight = (IE) ? document.body.clientHeight : window.innerHeight ;
         // -40 is a static adjustement for margin, spaces on the page
 
