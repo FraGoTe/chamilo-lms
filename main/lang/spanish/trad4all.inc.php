@@ -2,6 +2,17 @@
 /*
 for more information: see languages.txt in the lang folder.
 */
+$Formula = "Fórmula";
+$MultipleConnectionsAreNotAllow = "Este usuario ya está conectado";
+$Listen = "Escuchar";
+$AudioFileForItemX = "Audio para el item %s";
+$ThereIsANewWorkFeedbackInWorkXHere = "Hay un nuevo comentario en la tarea %s. Para verlo, <a href=\"%s\">haga clic aquí</a>";
+$ThereIsANewWorkFeedback = "Hay un nuevo comentario en la tarea %s";
+$LastUpload = "Última subida";
+$EditUserListCSV = "Editar usuarios por CSV";
+$NumberOfCoursesHidden = "Número de cursos escondidos";
+$Post = "Publicar";
+$Write = "Escribir";
 $YouHaveNotYetAchievedSkills = "Aún no ha logrado competencias";
 $Corn = "Maíz";
 $Gray = "Gris";
@@ -58,7 +69,7 @@ $IfYouWantOnlyIntegerValuesWriteBothLimitsWithoutDecimals = "Si desea sólo núm
 $GiveAnswerVariations = "Por favor, escriba cuántos problemas desea generar";
 $AnswerVariations = "Problemas a generar";
 $GiveFormula = "Por favor, escriba la fórmula";
-$Formula = "Fórmula";
+$SignatureFormula = "Cordialmente";
 $FormulaExample = "Ejemplo de fórmula: sqrt( [x] / [y] ) * ( e ^ ( ln(pi) ) )";
 $VariableRanges = "Rangos de las variables";
 $ExampleValue = "Valor del rango";

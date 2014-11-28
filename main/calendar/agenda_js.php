@@ -3,9 +3,7 @@
 /**
  * @package chamilo.calendar
  */
-/**
- * INIT SECTION
- */
+
 use \ChamiloSession as Session;
 
 // name of the language file that needs to be included
@@ -21,7 +19,6 @@ $userId = isset($_REQUEST['user_id']) ? $_REQUEST['user_id'] : null;
 if ($type == 'personal') {
     $cidReset = true; // fixes #5162
 }
-
 require_once '../inc/global.inc.php';
 require_once 'agenda.lib.php';
 require_once 'agenda.inc.php';
@@ -41,7 +38,14 @@ if (api_is_platform_admin() && ($type == 'admin' || $type == 'platform')) {
 }
 
 if (isset($_REQUEST['cidReq']) && !empty($_REQUEST['cidReq'])) {
-    $type = 'course';
+    if ($_REQUEST['cidReq'] == -1) {
+        // When is out of the course tool (e.g My agenda)
+        header('Location: ' . api_get_self());
+        exit;
+    } else {
+        $type = 'course';
+        $this_section = SECTION_COURSES;
+    }
 }
 
 $agenda = new Agenda();
